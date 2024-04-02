@@ -9,17 +9,27 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
+import javax.swing.JButton;
+import java.awt.GridLayout;
+import java.awt.Color;
 
 public class VentanaServer extends JFrame implements Ivista {
 
     private ActionListener actionListener;
     private JPanel panel;
     private JPanel panel_1;
-    private JLabel lblNewLabel_1;
+    private JLabel lblUsuariosConectados_1;
     private JPanel panel_2;
     private JPanel panel_3;
     private JPanel panel_4;
-    private JLabel lblNewLabel;
+    private JPanel panel_5;
+    private JPanel panel_6;
+    private JPanel panel_7;
+    private JPanel panel_8;
+    private JPanel panel_9;
+    private JLabel lblEstadoServer;
+    private JButton btnNewButton;
+    private JLabel lblOnOff;
 
     /**
      * Launch the application.
@@ -53,9 +63,9 @@ public class VentanaServer extends JFrame implements Ivista {
         panel_1.setBackground(SystemColor.activeCaption);
         getContentPane().add(panel_1, BorderLayout.SOUTH);
 
-        lblNewLabel_1 = new JLabel("Usuarios conectados al servidor:");
-        lblNewLabel_1.setFont(new Font("Courier New", Font.PLAIN, 18));
-        panel_1.add(lblNewLabel_1);
+        lblUsuariosConectados_1 = new JLabel("Usuarios conectados al servidor:");
+        lblUsuariosConectados_1.setFont(new Font("Courier New", Font.PLAIN, 18));
+        panel_1.add(lblUsuariosConectados_1);
 
         panel_2 = new JPanel();
         panel_2.setBackground(SystemColor.activeCaption);
@@ -68,14 +78,86 @@ public class VentanaServer extends JFrame implements Ivista {
         panel_4 = new JPanel();
         panel_4.setBackground(SystemColor.inactiveCaption);
         getContentPane().add(panel_4, BorderLayout.CENTER);
-
-        lblNewLabel = new JLabel("Estado del servidor:");
-        lblNewLabel.setFont(new Font("Corbel Light", Font.BOLD, 24));
-        panel_4.add(lblNewLabel);
+        panel_4.setLayout(new GridLayout(5, 1, 0, 0));
+        
+        panel_5 = new JPanel();
+        panel_5.setBackground(SystemColor.inactiveCaption);
+        panel_4.add(panel_5);
+        
+        lblEstadoServer = new JLabel("Estado del servidor:");
+        lblEstadoServer.setFont(new Font("Corbel Light", Font.BOLD, 24));
+        panel_5.add(lblEstadoServer);
+        
+        panel_6 = new JPanel();
+        panel_6.setBackground(SystemColor.inactiveCaption);
+        panel_4.add(panel_6);
+        
+        lblOnOff = new JLabel("OFF");
+        lblOnOff.setForeground(Color.RED);
+        lblOnOff.setFont(new Font("Microsoft Sans Serif", Font.BOLD, 23));
+        panel_6.add(lblOnOff);
+        
+        panel_7 = new JPanel();
+        panel_7.setBackground(SystemColor.inactiveCaption);
+        panel_4.add(panel_7);
+        
+        panel_8 = new JPanel();
+        panel_8.setBackground(SystemColor.inactiveCaption);
+        panel_4.add(panel_8);
+        
+        panel_9 = new JPanel();
+        panel_9.setBackground(SystemColor.inactiveCaption);
+        panel_4.add(panel_9);
+        
+        btnNewButton = new JButton("Iniciar Server");
+        btnNewButton.setFont(new Font("Microsoft YaHei", Font.PLAIN, 12));
+        panel_9.add(btnNewButton);
+    }
+    
+    
+    public void serverON() {
+    	System.out.println("CAMIANDO A ON");
+    	this.lblOnOff.setText("ON");
+    	lblOnOff.setForeground(Color.GREEN);
+        lblOnOff.setFont(new Font("Microsoft Sans Serif", Font.BOLD, 23));
+        this.btnNewButton.setEnabled(false);
     }
 
+    
+    
+    public JButton getBtnNewButton() {
+		return btnNewButton;
+	}
 
-    @Override
+	public void setBtnNewButton(JButton btnNewButton) {
+		this.btnNewButton = btnNewButton;
+	}
+
+	public JLabel getLblOnOff() {
+		return lblOnOff;
+	}
+
+	public void setLblOnOff(JLabel lblOnOff) {
+		this.lblOnOff = lblOnOff;
+	}
+
+	public JLabel getLblUsuariosConectados() {
+		return lblUsuariosConectados_1;
+	}
+
+	public void setLblUsuariosConectados(JLabel lblNewLabel_1) {
+		this.lblUsuariosConectados_1 = lblNewLabel_1;
+	}
+
+	public JLabel getLblEstadoServer() {
+		return lblEstadoServer;
+	}
+
+	public void setLblEstadoServer(JLabel lblNewLabel) {
+		this.lblEstadoServer = lblNewLabel;
+	}
+
+	@Override
     public void cerrar() {
         this.dispose();
     }
@@ -87,6 +169,7 @@ public class VentanaServer extends JFrame implements Ivista {
 
     @Override
     public void setActionListener(ActionListener actionListener) {
+    	this.btnNewButton.addActionListener(actionListener);
         this.actionListener = actionListener;
     }
 

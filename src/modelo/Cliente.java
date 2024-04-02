@@ -1,6 +1,6 @@
 package modelo;
 
-import negocio.SistemaCliente;
+import negocio.SistemaEmpleados;
 
 public class Cliente {
 	private String DNI;

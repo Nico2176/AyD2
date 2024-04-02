@@ -68,10 +68,23 @@ public class VentanaRegistro extends JFrame implements Ivista {
         JPanel panel_6 = new JPanel();
         panel_6.setBackground(SystemColor.inactiveCaption);
         panel_4.add(panel_6);
+        panel_6.setLayout(new GridLayout(2, 1, 0, 0));
+        
+        JPanel panel_14 = new JPanel();
+        panel_14.setBackground(SystemColor.inactiveCaption);
+        panel_6.add(panel_14);
         
         JLabel lblNewLabel = new JLabel("Ingresa tu DNI ");
+        panel_14.add(lblNewLabel);
         lblNewLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 12));
-        panel_6.add(lblNewLabel);
+        
+        JPanel panel_13 = new JPanel();
+        panel_13.setBackground(SystemColor.inactiveCaption);
+        panel_6.add(panel_13);
+        
+        JLabel lblNewLabel_1 = new JLabel("(sin puntos)");
+        lblNewLabel_1.setFont(new Font("Microsoft YaHei", Font.PLAIN, 12));
+        panel_13.add(lblNewLabel_1);
         
         JPanel panel_7 = new JPanel();
         panel_7.setBackground(SystemColor.inactiveCaption);

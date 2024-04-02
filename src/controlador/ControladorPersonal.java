@@ -2,7 +2,10 @@ package controlador;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.ConnectException;
+import java.util.Random;
 
+import negocio.SistemaEmpleados;
 import vista.Ivista;
 import vista.VentanaPersonal;
 import vista.VentanaServer;
@@ -14,6 +17,7 @@ public class ControladorPersonal implements ActionListener{
 		this.vista = new VentanaPersonal();
 		this.vista.setActionListener(this);
 		this.vista.mostrar();
+		this.conectarServer();
 		
 	}
 
@@ -28,5 +32,9 @@ public class ControladorPersonal implements ActionListener{
 		}
 		
 	}
-
+	
+	private void conectarServer() {
+		SistemaEmpleados.getInstancia().conectar("localhost", 1); //puerto del server hardcodeado en 1
+		
+}
 }
