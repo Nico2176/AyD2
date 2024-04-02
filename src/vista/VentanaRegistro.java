@@ -16,16 +16,36 @@ import java.awt.FlowLayout;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import java.awt.SystemColor;
+import java.awt.event.ActionListener;
 import java.awt.Font;
 
 
-public class VentanaRegistro extends JFrame {
+public class VentanaRegistro extends JFrame implements Ivista {
 	private JTextField textField;
-    public VentanaRegistro() {
+	private ActionListener actionListener;
+	private JButton btnNewButton;
+	
+    public JTextField getTextField() {
+		return textField;
+	}
+
+	public void setTextField(JTextField textField) {
+		this.textField = textField;
+	}
+
+	public JButton getBtnNewButton() {
+		return btnNewButton;
+	}
+
+	public void setBtnNewButton(JButton btnNewButton) {
+		this.btnNewButton = btnNewButton;
+	}
+
+	public VentanaRegistro() {
         // Configurar la ventana
         setTitle("Registro de usuarios");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400, 200);
+        setSize(500, 350);
         setLocationRelativeTo(null);
         getContentPane().setLayout(new BorderLayout(0, 0));
         
@@ -49,7 +69,7 @@ public class VentanaRegistro extends JFrame {
         panel_6.setBackground(SystemColor.inactiveCaption);
         panel_4.add(panel_6);
         
-        JLabel lblNewLabel = new JLabel("Ingresa tu DNI para registrarte");
+        JLabel lblNewLabel = new JLabel("Ingresa tu DNI ");
         lblNewLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 12));
         panel_6.add(lblNewLabel);
         
@@ -73,7 +93,7 @@ public class VentanaRegistro extends JFrame {
         panel_9.setBackground(SystemColor.inactiveCaption);
         panel_4.add(panel_9);
         
-        JButton btnNewButton = new JButton("Registrarse");
+        btnNewButton = new JButton("Registrarse");
         btnNewButton.setFont(new Font("Franklin Gothic Medium", Font.PLAIN, 12));
         panel_9.add(btnNewButton);
         
@@ -102,4 +122,21 @@ public class VentanaRegistro extends JFrame {
             ventana.setVisible(true);
         });
     }
+
+	@Override
+	public void cerrar() {
+		this.dispose();
+	}
+
+	@Override
+	public void mostrar() {
+		this.setVisible(true);
+	}
+
+	@Override
+	public void setActionListener(ActionListener actionListener) {
+		this.btnNewButton.addActionListener(actionListener);
+		this.actionListener=actionListener;
+		
+	}
 }
