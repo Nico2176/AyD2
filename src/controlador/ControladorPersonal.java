@@ -35,6 +35,7 @@ public class ControladorPersonal implements ActionListener{
 	
 	private void conectarServer() {
 		SistemaEmpleados.getInstancia().conectar("localhost", 1); //puerto del server hardcodeado en 1
+		SistemaEmpleados.getInstancia().crearHilo();
 		
 }
 }

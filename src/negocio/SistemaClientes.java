@@ -37,7 +37,7 @@ public class SistemaClientes {
 	
 	
 	
-	public void conectar(String host, int puerto) { 
+	public void conectar(String host, int puerto) throws Exception{ 
         try {
             this.socket = new Socket(host, puerto); 
             System.out.println("Cliente conectado con el servidor, puerto del socket: "+ this.socket.getLocalPort());
@@ -48,7 +48,7 @@ public class SistemaClientes {
         }
     }
 	
-	public void enviarDatos(String DNI) {
+	public void enviarDatos(String DNI) throws Exception{
 		try {
 			System.out.println("Enviando datos al servidor");
 			this.flujoSalida.writeObject(DNI);

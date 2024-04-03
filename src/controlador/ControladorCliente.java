@@ -2,6 +2,7 @@ package controlador;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 import javax.swing.JOptionPane;
 
@@ -28,12 +29,22 @@ public class ControladorCliente implements ActionListener {
 			VentanaRegistro ventanaR = (VentanaRegistro) this.vista;
 			String DNI =ventanaR.getTextField().getText();
 			if (SistemaClientes.getInstancia().validarCadenaNumerica(DNI)) { //devuelve true si el DNI es una cadena de 8 numeros
-				ventanaR.getTextField().setText("");
-				JOptionPane.showMessageDialog(null, "Registro exitoso");
+			
 				
-				SistemaClientes.getInstancia().conectar("localhost", 1); //puerto del servidor hardcodeado en 1
-				SistemaClientes.getInstancia().enviarDatos(DNI);
-				//enviar al servidor aqui
+				
+				try {
+					SistemaClientes.getInstancia().conectar("localhost", 1);  
+					SistemaClientes.getInstancia().enviarDatos(DNI);
+					ventanaR.getTextField().setText("");
+					JOptionPane.showMessageDialog(null, "Registro exitoso");
+					//puerto del servidor hardcodeado en 1 ver si poner esta linea afuera 
+					//del if ya que se conecta de nuevo cada vez que alguien se registra
+				} catch (Exception e1) {
+					 System.out.println(e1.getMessage());
+					 JOptionPane.showMessageDialog(null, "Ha ocurrido un error.", "Error", JOptionPane.ERROR_MESSAGE);
+				} 
+				
+				
 				//this.vista.cerrar();        //creo que no conviene cerrar la ventana pues el kiosco lo usarán muchos clientes
 			} else { //bien
 				JOptionPane.showMessageDialog(null, "DNI inválido, vuelva a ingresar");

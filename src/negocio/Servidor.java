@@ -8,6 +8,12 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
+
+import modelo.Cliente;
 
 
 
@@ -16,6 +22,8 @@ public class Servidor implements Runnable{
 	public static Servidor instancia;
 	private Socket socket;
 	private ServerSocket socketServer;
+	private ArrayList<Cliente> clientes = new ArrayList<>();
+	private ArrayList<Socket> sockets = new ArrayList<Socket>();
 	
 	public static Servidor getInstancia() {
         if (instancia == null) {
@@ -24,9 +32,40 @@ public class Servidor implements Runnable{
         return instancia;
     }
 	
+	
+	
+	
+	public ArrayList<Socket> getSockets() {
+		return sockets;
+	}
+
+
+
+
+	public ArrayList<Cliente> getClientes() {
+		return clientes;
+	}
+
+
+
 	public void abrirServer() {
 		Thread hilo = new Thread(this);
         hilo.start();
+	}
+	
+	public void enviarQueue() {        //este metodo envia a todos los sockets conectados la queue de clientes
+		Iterator<Socket> iterador = this.sockets.iterator();
+ 		while (iterador.hasNext()) {
+ 			Socket aux = iterador.next();
+			try {
+				ObjectOutputStream flujo = new ObjectOutputStream(aux.getOutputStream());
+				System.out.println("Enviando queue al socket de puerto "+ aux.getPort());
+                flujo.writeObject(this.clientes);
+                flujo.flush();
+			} catch (IOException e) {
+				System.out.println("Excepcion enviando queues: "+ e.getMessage());
+			}
+	}
 	}
 	
 	@Override
@@ -37,6 +76,8 @@ public class Servidor implements Runnable{
 				System.out.println("Servidor iniciado. Puerto: " + puerto);
 				while (true) {
 					socket = socketServer.accept();
+					System.out.println("Ha entrado una conexion al servidor");
+					this.sockets.add(socket);
 				
 	        		Thread escucha = new Thread(new Escuchar(socket));   //porque cada socket debe tener un hilo propio escuchando e/s de datos
 	        		                                                     //, ademas del hilo original del server que escucha conexiones entrantes
@@ -83,12 +124,22 @@ public class Servidor implements Runnable{
                     		
                     	} else { //es un DNI (x descarte)
                     		System.out.println("El servidor recibió el DNI "+ cadena);
+                    		Servidor.getInstancia().getClientes().add(new Cliente(cadena)); //agrego al cliente a una coleccion de clientes
+                    		Servidor.getInstancia().enviarQueue(); //enviar la queue actualziada a todos los empleados
+                    		
+                    		 
+                    	 			
+                    	 			
+                    	 	} 
+                    		
+                    		
                     		//ver donde guardar la colección con DNIS para la cola, no sé si es correcto hacerlo en el mismo servidor o habría que hacer una clase aparte
+                    		//provisoriamente voy a dejar la coleccion en esta clase
                     		
                     	}
                     	
                     }
-            	}
+            	
             } catch (Exception e) {
             	System.out.println("Excepcion "+ e.getMessage());
             	
