@@ -25,6 +25,7 @@ public class Servidor extends Observable implements Runnable{
 	private ServerSocket socketServer;
 	private Queue<Cliente> clientes = new LinkedList<>();
 	private ArrayList<Socket> sockets = new ArrayList<Socket>();
+	private static int boxes=0;
 	
 	public static Servidor getInstancia() {
         if (instancia == null) {
@@ -98,6 +99,16 @@ public class Servidor extends Observable implements Runnable{
            
     }
 	
+	private void enviarBox(Socket socket) {
+		try {
+			ObjectOutputStream flujo = new ObjectOutputStream(socket.getOutputStream());
+			flujo.writeObject(++this.boxes);
+		} catch (IOException e) {
+			System.out.println("Exception enviando el box actual "+ e.toString());
+		}
+	}
+	
+
 	
 	private class Escuchar implements Runnable { //seria el hilo de cada socket. puse la clase aca para q esté mas a mano
         private Socket socket;
@@ -106,6 +117,8 @@ public class Servidor extends Observable implements Runnable{
         	System.out.println("Creando clase escuchadora");
             this.socket = socket;
         }
+        
+        
 
         @Override
         public void run() {
@@ -113,6 +126,8 @@ public class Servidor extends Observable implements Runnable{
             	System.out.println("Clase escuchadora creada xd");
             	ObjectInputStream flujoEntrada = new ObjectInputStream(socket.getInputStream());
         	    ObjectOutputStream flujoSalida = new ObjectOutputStream(socket.getOutputStream());
+        	    Servidor.getInstancia().enviarQueue();        //cuando uno nuevo se conecta, envio las queues nuevamente para que si ya habia empleados, se le carguen los datos también.
+        	    Servidor.getInstancia().enviarBox(socket);    //envio el numero de box que le corresponde al empleado que acaba de conectarse
             	while (true) {	
             		System.out.println("Escuchando...........");
                     Object object = flujoEntrada.readObject();

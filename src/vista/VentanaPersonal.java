@@ -38,7 +38,7 @@ public class VentanaPersonal extends JFrame implements Ivista {
     private JPanel panel_6;
     private JPanel panel_7;
     private JPanel panel_8;
-    private JLabel lblNewLabel;
+    private JLabel lblBox;
     private JLabel lblNewLabel_2;
     private JPanel panel_lista_1;
     private JPanel panel_lista_2;
@@ -126,9 +126,9 @@ public class VentanaPersonal extends JFrame implements Ivista {
         panel_7.setBackground(SystemColor.inactiveCaption);
         panel_5.add(panel_7);
         
-        lblNewLabel = new JLabel("BOX:");
-        lblNewLabel.setFont(new Font("Microsoft YaHei", Font.PLAIN, 16));
-        panel_7.add(lblNewLabel);
+        lblBox = new JLabel("BOX:");
+        lblBox.setFont(new Font("Microsoft YaHei", Font.PLAIN, 16));
+        panel_7.add(lblBox);
         
         panel_8 = new JPanel();
         panel_8.setBorder(new LineBorder(new Color(0, 0, 0)));
@@ -197,6 +197,10 @@ public class VentanaPersonal extends JFrame implements Ivista {
     	labels[5] = lbl_lista_6;
         
         
+    }
+    
+    public void setBox(int box) {
+    	this.lblBox.setText("BOX: "+ box);
     }
     
     public void actualizaSiguiente(String DNI) {

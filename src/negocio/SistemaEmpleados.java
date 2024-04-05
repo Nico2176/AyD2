@@ -104,6 +104,10 @@ public class SistemaEmpleados extends Observable implements Runnable {
 					notifyObservers(clientes);
 					//ControladorPersonal.getInstancia().printeaLista(clientes);
 					//actualizar ventana del empleado con la queue
+				} else if (object instanceof Integer) {
+					this.setChanged();
+					int box = (int) object;
+					notifyObservers(box);
 				}
 				
 				

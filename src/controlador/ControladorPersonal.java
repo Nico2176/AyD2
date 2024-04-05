@@ -3,6 +3,7 @@ package controlador;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.ConnectException;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Queue;
@@ -63,8 +64,12 @@ public class ControladorPersonal implements ActionListener, Observer{
 	@Override
 	public void update(Observable o, Object arg) {
 		VentanaPersonal ventana = (VentanaPersonal) this.vista;
-		ventana.printeaLista(arg);
-		ventana.actualizaSiguiente(SistemaEmpleados.getInstancia().getClienteActual());
+		if (arg instanceof List) {
+			ventana.printeaLista(arg);
+			ventana.actualizaSiguiente(SistemaEmpleados.getInstancia().getClienteActual());
+		} else if (arg instanceof Integer) {
+			ventana.setBox((int) arg);
+		}
 		/* Datos datos = (Datos) arg;
 		ventana.printeaLista(datos.getClientes());
 		System.out.println("El controlador recibio el objeto "+ arg +" mediente patrón observer");
