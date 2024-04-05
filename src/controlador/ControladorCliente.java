@@ -19,6 +19,11 @@ public class ControladorCliente implements ActionListener {
 		this.vista = new VentanaRegistro();
 		this.vista.setActionListener(this);
 		this.vista.mostrar();
+		try {
+			SistemaClientes.getInstancia().conectar("localhost", 1);
+		} catch (Exception e) {
+			System.out.println("Excepcion conectandose al servidor "+ e.toString());
+		}  
 	}
 
 	@Override
@@ -29,16 +34,10 @@ public class ControladorCliente implements ActionListener {
 			VentanaRegistro ventanaR = (VentanaRegistro) this.vista;
 			String DNI =ventanaR.getTextField().getText();
 			if (SistemaClientes.getInstancia().validarCadenaNumerica(DNI)) { //devuelve true si el DNI es una cadena de 8 numeros
-			
-				
-				
-				try {
-					SistemaClientes.getInstancia().conectar("localhost", 1);  
+				try {		
 					SistemaClientes.getInstancia().enviarDatos(DNI);
 					ventanaR.getTextField().setText("");
 					JOptionPane.showMessageDialog(null, "Registro exitoso");
-					//puerto del servidor hardcodeado en 1 ver si poner esta linea afuera 
-					//del if ya que se conecta de nuevo cada vez que alguien se registra
 				} catch (Exception e1) {
 					 System.out.println(e1.getMessage());
 					 JOptionPane.showMessageDialog(null, "Ha ocurrido un error.", "Error", JOptionPane.ERROR_MESSAGE);

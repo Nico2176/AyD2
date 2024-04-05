@@ -45,9 +45,10 @@ public class ControladorPersonal implements ActionListener, Observer{
 			if (SistemaEmpleados.getInstancia().getClienteActual().equalsIgnoreCase("")) 
 				JOptionPane.showMessageDialog(null, "Debes estar atendiendo a alguien para finalizar su turno", "Error", JOptionPane.ERROR_MESSAGE);
 			else {
-
+				
 				ventana.actualizaSiguiente("");
-				SistemaEmpleados.getInstancia().setClienteActual("");
+				//SistemaEmpleados.getInstancia().baja(); //para que disminuya en 1 la cantidad de coenctados del servidor 
+				SistemaEmpleados.getInstancia().setClienteActual("");  
 			}
 		}
 		

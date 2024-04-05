@@ -124,7 +124,7 @@ public class Servidor extends Observable implements Runnable{
                     	} else if (cadena.equalsIgnoreCase("Siguiente")) { //Un empleado llama al siguiente en la queue
                     		Servidor.getInstancia().getClientes().poll();
                     		Servidor.getInstancia().enviarQueue();                  		
-                    	} else { //es un DNI (x descarte)
+                    	}  else{//es un DNI (x descarte)
                     		System.out.println("El servidor recibió el DNI "+ cadena);
                     		Servidor.getInstancia().getClientes().add(new Cliente(cadena)); //agrego al cliente a una coleccion de clientes
                     		Servidor.getInstancia().enviarQueue(); //enviar la queue actualziada a todos los empleados
