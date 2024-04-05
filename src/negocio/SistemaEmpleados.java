@@ -7,23 +7,37 @@ import java.net.ConnectException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
+import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import controlador.ControladorCliente;
+import controlador.ControladorPersonal;
 import modelo.Cliente;
 
 
 
 
-public class SistemaEmpleados implements Runnable {
+public class SistemaEmpleados extends Observable implements Runnable {
 	private static SistemaEmpleados instancia;
 	private Socket socket;
 	private ObjectOutputStream flujoSalida;
 	private ObjectInputStream flujoEntrada;
     private Thread hilo;
+    private Queue<Cliente> clientes;
+    private String clienteActual="";
 
+    
 	
+	public void setClienteActual(String clienteActual) {
+		this.clienteActual = clienteActual;
+	}
+
+	public String getClienteActual() {
+		return clienteActual;
+	}
+
 	public static SistemaEmpleados getInstancia() {
 		if (instancia == null)
 			instancia = new SistemaEmpleados();
@@ -35,6 +49,27 @@ public class SistemaEmpleados implements Runnable {
 		hilo.start();
 	}
 
+	
+	public void siguiente() throws Exception{
+		if (this.clienteActual!=null && !this.clienteActual.equalsIgnoreCase("")) 
+			throw new Exception ("Primero debes finalizar tu turno actual");
+		
+			
+		try {
+			clienteActual = this.clientes.poll().getDNI();	
+		} catch (Exception e) {
+			throw new Exception("No hay clientes en la Queue");
+			
+		}
+
+			
+
+		try {
+			this.flujoSalida.writeObject("Siguiente");
+		} catch (IOException e) {
+			System.out.println("Excepcion cuando el empleado hace siguiente "+ e.toString());
+		}
+	}
 	
 	public void conectar(String host, int puerto) { 
         try {
@@ -63,6 +98,11 @@ public class SistemaEmpleados implements Runnable {
 				Object object =   flujo.readObject();
 				System.out.println("Empleado recibió el objeto "+ object.toString());
 				if (object instanceof List) { //recibió la queue de clientes actualizada
+					Queue<Cliente> clientes = (Queue<Cliente>) object;
+					this.clientes= clientes;
+					this.setChanged();
+					notifyObservers(clientes);
+					//ControladorPersonal.getInstancia().printeaLista(clientes);
 					//actualizar ventana del empleado con la queue
 				}
 				

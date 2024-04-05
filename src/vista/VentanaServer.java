@@ -30,6 +30,7 @@ public class VentanaServer extends JFrame implements Ivista {
     private JLabel lblEstadoServer;
     private JButton btnNewButton;
     private JLabel lblOnOff;
+    private int x=0;
 
     /**
      * Launch the application.
@@ -63,7 +64,7 @@ public class VentanaServer extends JFrame implements Ivista {
         panel_1.setBackground(SystemColor.activeCaption);
         getContentPane().add(panel_1, BorderLayout.SOUTH);
 
-        lblUsuariosConectados_1 = new JLabel("Usuarios conectados al servidor:");
+        lblUsuariosConectados_1 = new JLabel("Usuarios conectados al servidor: "+ x);
         lblUsuariosConectados_1.setFont(new Font("Courier New", Font.PLAIN, 18));
         panel_1.add(lblUsuariosConectados_1);
 
@@ -123,6 +124,16 @@ public class VentanaServer extends JFrame implements Ivista {
         this.btnNewButton.setEnabled(false);
     }
 
+    
+    
+    
+    public void alta() {
+    	this.lblUsuariosConectados_1.setText("Usuarios conectados al servidor: "+ ++x);
+    }
+    
+    public void baja() {
+    	this.lblUsuariosConectados_1.setText("Usuarios conectados al servidor: "+ --x);
+    }
     
     
     public JButton getBtnNewButton() {

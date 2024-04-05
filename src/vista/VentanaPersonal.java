@@ -8,11 +8,17 @@ import java.awt.BorderLayout;
 import javax.swing.JButton;
 import java.awt.SystemColor;
 import java.awt.event.ActionListener;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import javax.swing.JLabel;
 import java.awt.GridLayout;
 import java.awt.FlowLayout;
 import javax.swing.border.LineBorder;
+
+import modelo.Cliente;
+
 import java.awt.Color;
 import java.awt.Font;
 
@@ -33,8 +39,21 @@ public class VentanaPersonal extends JFrame implements Ivista {
     private JPanel panel_7;
     private JPanel panel_8;
     private JLabel lblNewLabel;
-    private JLabel lblNewLabel_1;
     private JLabel lblNewLabel_2;
+    private JPanel panel_lista_1;
+    private JPanel panel_lista_2;
+    private JPanel panel_lista_3;
+    private JPanel panel_lista_4;
+    private JPanel panel_lista_5;
+    private JPanel panel_lista_6;
+    private JLabel lbl_lista_1;
+    private JLabel lbl_lista_2;
+    private JLabel lbl_lista_3;
+    private JLabel lbl_lista_4;
+    private JLabel lbl_lista_5;
+    private JLabel lbl_lista_6;
+    private JPanel[] paneles = new JPanel[6];
+	private JLabel[] labels = new JLabel[6];
 
     /**
      * Launch the application.
@@ -124,13 +143,84 @@ public class VentanaPersonal extends JFrame implements Ivista {
         panel_6.setBorder(new LineBorder(new Color(0, 0, 0)));
         panel_6.setBackground(SystemColor.inactiveCaption);
         panel_4.add(panel_6, BorderLayout.CENTER);
-        panel_6.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel_6.setLayout(new GridLayout(6, 0, 0, 0));
         
-        lblNewLabel_1 = new JLabel("");
-        panel_6.add(lblNewLabel_1);
+        panel_lista_1 = new JPanel();
+        panel_lista_1.setBackground(SystemColor.controlHighlight);
+        panel_6.add(panel_lista_1);
+        panel_lista_1.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        
+        lbl_lista_1 = new JLabel("");
+        panel_lista_1.add(lbl_lista_1);
+        
+        panel_lista_2 = new JPanel();
+        panel_lista_2.setBackground(SystemColor.scrollbar);
+        panel_6.add(panel_lista_2);
+        
+        lbl_lista_2 = new JLabel("");
+        panel_lista_2.add(lbl_lista_2);
+        
+        panel_lista_3 = new JPanel();
+        panel_lista_3.setBackground(SystemColor.controlHighlight);
+        panel_6.add(panel_lista_3);
+        
+        lbl_lista_3 = new JLabel("");
+        panel_lista_3.add(lbl_lista_3);
+        
+        panel_lista_4 = new JPanel();
+        panel_lista_4.setBackground(SystemColor.scrollbar);
+        panel_6.add(panel_lista_4);
+        
+        lbl_lista_4 = new JLabel("");
+        panel_lista_4.add(lbl_lista_4);
+        
+        panel_lista_5 = new JPanel();
+        panel_lista_5.setBackground(SystemColor.controlHighlight);
+        panel_6.add(panel_lista_5);
+        
+        lbl_lista_5 = new JLabel("");
+        panel_lista_5.add(lbl_lista_5);
+        
+        panel_lista_6 = new JPanel();
+        panel_lista_6.setBackground(SystemColor.scrollbar);
+        panel_6.add(panel_lista_6);
+        
+        lbl_lista_6 = new JLabel("");
+        panel_lista_6.add(lbl_lista_6);
+        
+        
+        labels[0] = lbl_lista_1;
+    	labels[1] = lbl_lista_2;
+    	labels[2] = lbl_lista_3;
+    	labels[3] = lbl_lista_4;
+    	labels[4] = lbl_lista_5;
+    	labels[5] = lbl_lista_6;
+        
+        
+    }
+    
+    public void actualizaSiguiente(String DNI) {
+    	this.lblNewLabel_2.setText("Actualmente atendiendo a: " + DNI );
     }
 
-    @Override
+    
+    public void printeaLista(Object obj) {
+    	Queue<Cliente> clientes = (Queue<Cliente>) obj;
+    	LinkedList<Cliente> lista = new LinkedList<Cliente> (clientes); //convierto la queue en una lista para poder acceder a los elementos 
+    	Iterator<Cliente> iterador = lista.iterator();               
+    	int i=0;
+        while (iterador.hasNext()) {
+        	Cliente cliente = iterador.next();
+        	this.labels[i].setText(cliente.toString());                 //los printeo en la ventana
+        	i++;  
+        }
+        
+        for (int x = i+1 ; x < 6; x++) {
+           this.labels[i].setText("");
+        }
+    }
+
+	@Override
     public void cerrar() {
         this.dispose();
     }

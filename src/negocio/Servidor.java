@@ -11,18 +11,19 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Observable;
 import java.util.Queue;
 
 import modelo.Cliente;
 
 
 
-public class Servidor implements Runnable{
+public class Servidor extends Observable implements Runnable{
 	
 	public static Servidor instancia;
 	private Socket socket;
 	private ServerSocket socketServer;
-	private ArrayList<Cliente> clientes = new ArrayList<>();
+	private Queue<Cliente> clientes = new LinkedList<>();
 	private ArrayList<Socket> sockets = new ArrayList<Socket>();
 	
 	public static Servidor getInstancia() {
@@ -42,7 +43,7 @@ public class Servidor implements Runnable{
 
 
 
-	public ArrayList<Cliente> getClientes() {
+	public Queue<Cliente> getClientes() {
 		return clientes;
 	}
 
@@ -77,6 +78,8 @@ public class Servidor implements Runnable{
 				while (true) {
 					socket = socketServer.accept();
 					System.out.println("Ha entrado una conexion al servidor");
+					this.setChanged();
+					this.notifyObservers("Alta");
 					this.sockets.add(socket);
 				
 	        		Thread escucha = new Thread(new Escuchar(socket));   //porque cada socket debe tener un hilo propio escuchando e/s de datos
@@ -119,9 +122,8 @@ public class Servidor implements Runnable{
                     		
                     		
                     	} else if (cadena.equalsIgnoreCase("Siguiente")) { //Un empleado llama al siguiente en la queue
-                    		
-                    		
-                    		
+                    		Servidor.getInstancia().getClientes().poll();
+                    		Servidor.getInstancia().enviarQueue();                  		
                     	} else { //es un DNI (x descarte)
                     		System.out.println("El servidor recibió el DNI "+ cadena);
                     		Servidor.getInstancia().getClientes().add(new Cliente(cadena)); //agrego al cliente a una coleccion de clientes
