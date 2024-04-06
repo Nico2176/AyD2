@@ -51,7 +51,7 @@ public class SistemaClientes {
 	public void enviarDatos(String DNI) throws Exception{
 		try {
 			System.out.println("Enviando datos al servidor");
-			this.flujoSalida.writeObject(DNI);
+			this.flujoSalida.writeObject(new Cliente(DNI));
 			System.out.println("Datos enviados al servidor");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

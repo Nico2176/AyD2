@@ -52,6 +52,7 @@ public class VentanaServer extends JFrame implements Ivista {
      * Create the application.
      */
     public VentanaServer() {
+    	this.setTitle(("Servidor"));
         System.out.println("INICIALIZANDO VENTANA SERVER");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 450, 300);

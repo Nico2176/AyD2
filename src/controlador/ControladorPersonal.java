@@ -68,6 +68,7 @@ public class ControladorPersonal implements ActionListener, Observer{
 			ventana.printeaLista(arg);
 			ventana.actualizaSiguiente(SistemaEmpleados.getInstancia().getClienteActual());
 		} else if (arg instanceof Integer) {
+			SistemaEmpleados.getInstancia().setBox((int) arg);
 			ventana.setBox((int) arg);
 		}
 		/* Datos datos = (Datos) arg;

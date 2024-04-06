@@ -7,6 +7,7 @@ import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import javax.swing.JButton;
 import java.awt.SystemColor;
+import java.awt.Toolkit;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -82,6 +83,7 @@ public class VentanaPersonal extends JFrame implements Ivista {
      * Initialize the contents of the frame.
      */
     private void initialize() {
+    	this.setTitle("Empleados");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 450, 300);
         
@@ -213,6 +215,7 @@ public class VentanaPersonal extends JFrame implements Ivista {
     	LinkedList<Cliente> lista = new LinkedList<Cliente> (clientes); //convierto la queue en una lista para poder acceder a los elementos 
     	Iterator<Cliente> iterador = lista.iterator();               
     	int i=0;
+    	Toolkit.getDefaultToolkit().beep();
         while (iterador.hasNext()) {
         	Cliente cliente = iterador.next();
         	this.labels[i].setText(cliente.toString());                 //los printeo en la ventana

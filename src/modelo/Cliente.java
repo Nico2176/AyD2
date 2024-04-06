@@ -11,7 +11,7 @@ public class Cliente implements Serializable {
 	
 	public Cliente(String dNI) {
 		super();
-		DNI = dNI;
+		this.DNI = dNI;
 	}
 
 	public String getDNI() {
