@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Observable;
 import java.util.Queue;
@@ -16,6 +17,7 @@ import controlador.ControladorCliente;
 import controlador.ControladorPersonal;
 import modelo.Cliente;
 import modelo.Datos;
+import modelo.DatosEstadisticos;
 
 
 
@@ -30,6 +32,10 @@ public class SistemaEmpleados extends Observable implements Runnable {
     private String clienteActual="";
     private int Box;
     private String pre="[EMPLEADO]";
+    private int segundosDesocupado=0;
+    private Date comienzo;
+    private Date comienzoDesocupado = new java.util.Date();
+
     
 	
 	public int getBox() {
@@ -77,24 +83,40 @@ public class SistemaEmpleados extends Observable implements Runnable {
 		try {
 			System.out.println(pre+"DNI de cliente actual que estamos atendiendo: "+ clienteActual);
 			this.flujoSalida.writeObject(new Datos(this.clientes,this.Box,true,clienteActual)); //queue, box que pidió al siguiente, y true para identificar que se está pidiendo a alguien y no es un nuevo ingreso en la Queue
+			comienzo = new java.util.Date(); //para comenzar a contar los segundos transcurridos 
+			java.util.Date finDesocupado = new java.util.Date();
+			this.segundosDesocupado=(int)((finDesocupado.getTime() - this.comienzoDesocupado.getTime()) / 1000);
 			//this.flujoSalida.writeObject("Siguiente");
 		} catch (IOException e) {
 			System.out.println(pre+"Excepcion cuando hace siguiente "+ e.toString());
 		}
 	}
 	
-	public void conectar(String host, int puerto) { 
-        try {
+
+	
+	
+	public int finalizaTurno() {
+		java.util.Date fin = new java.util.Date();
+		try {
+			DatosEstadisticos datos = new DatosEstadisticos();
+			datos.setSegundosDesocupado(this.segundosDesocupado);
+			datos.setSegundosAtendiendo(((int)((fin.getTime() - this.comienzo.getTime()) / 1000)));
+			this.flujoSalida.writeObject(datos);
+			this.comienzoDesocupado= new java.util.Date();
+		} catch (IOException e) {
+			System.out.println(pre+"Error enviando las estadisticas");
+		}
+		return (int)((fin.getTime() - this.comienzo.getTime()) / 1000);
+	}
+	
+	public void conectar(String host, int puerto) throws Exception { 
             this.socket = new Socket(host, puerto); 
             System.out.println(pre+"Conectado con el servidor, puerto del socket: "+ this.socket.getLocalPort());
             this.flujoSalida = new ObjectOutputStream(socket.getOutputStream());
             this.flujoEntrada = new ObjectInputStream(socket.getInputStream());
             this.flujoSalida.writeObject(21);
             
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
-    }
+        } 
 
 
 

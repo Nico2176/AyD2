@@ -19,19 +19,21 @@ import vista.VentanaServer;
 
 public class ControladorPersonal implements ActionListener, Observer{
 	private Ivista vista;
+	private String pre="[CONTROLADOR EMPLEADO]";
 
 	public ControladorPersonal() {
 		this.vista = new VentanaPersonal();
 		this.vista.setActionListener(this);
 		this.vista.mostrar();
 		SistemaEmpleados.getInstancia().addObserver(this);
-		this.conectarServer();	
+		this.conectarServer();
+
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		String comando = e.getActionCommand();
-		System.out.println(comando);
+		System.out.println(pre+ " "+comando);
 		if (comando.equalsIgnoreCase("Siguiente")) { //bien
 			try {
 				SistemaEmpleados.getInstancia().siguiente();
@@ -42,13 +44,13 @@ public class ControladorPersonal implements ActionListener, Observer{
 			
 		} else if (comando.equalsIgnoreCase(("FinalizarTurno"))){ //bien
 			VentanaPersonal ventana = (VentanaPersonal) this.vista;
-			System.out.println("Cliente actual: "+ SistemaEmpleados.getInstancia().getClienteActual());
+			System.out.println(pre+"Cliente actual: "+ SistemaEmpleados.getInstancia().getClienteActual());
 			if (SistemaEmpleados.getInstancia().getClienteActual().equalsIgnoreCase("")) 
 				JOptionPane.showMessageDialog(null, "Debes estar atendiendo a alguien para finalizar su turno", "Error", JOptionPane.ERROR_MESSAGE);
 			else {
+				System.out.println(pre+"El tiempo que tardó el empleado en el box fue de  "+ SistemaEmpleados.getInstancia().finalizaTurno() + " segundos");
 				
 				ventana.actualizaSiguiente("");
-				//SistemaEmpleados.getInstancia().baja(); //para que disminuya en 1 la cantidad de coenctados del servidor 
 				SistemaEmpleados.getInstancia().setClienteActual("");  
 			}
 		}
@@ -56,8 +58,13 @@ public class ControladorPersonal implements ActionListener, Observer{
 	}
 	
 	
-	private void conectarServer() {
-		SistemaEmpleados.getInstancia().conectar("localhost", 1); //puerto del server hardcodeado en 1
+	private void conectarServer(){
+		try {
+			SistemaEmpleados.getInstancia().conectar("localhost", 1);  //puerto del server hardcodeado en 1
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, "Servidor no disponible.", "Error", JOptionPane.ERROR_MESSAGE);
+			System.exit(0);
+		}
 		SistemaEmpleados.getInstancia().crearHilo();
     }
 	

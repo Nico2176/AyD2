@@ -16,6 +16,7 @@ import java.util.Queue;
 
 import modelo.Cliente;
 import modelo.Datos;
+import modelo.DatosEstadisticos;
 
 
 
@@ -29,6 +30,7 @@ public class Servidor extends Observable implements Runnable{
 	private ArrayList<Socket> monitores = new ArrayList<Socket>();
 	private static int boxes=0;
 	private String pre="[SERVER]";
+	private Estadisticas estadisticas = new Estadisticas();
 	
 	public static Servidor getInstancia() {
         if (instancia == null) {
@@ -40,6 +42,13 @@ public class Servidor extends Observable implements Runnable{
 	
 	
 	
+	public Estadisticas getEstadisticas() {
+		return estadisticas;
+	}
+
+
+
+
 	public ArrayList<Socket> getMonitores() {
 		return monitores;
 	}
@@ -188,6 +197,10 @@ public class Servidor extends Observable implements Runnable{
                     	}
                     		
                     	
+                    } else if (object instanceof DatosEstadisticos) {
+                    	DatosEstadisticos datos = (DatosEstadisticos) object;
+                    	Servidor.getInstancia().getEstadisticas().clienteAtendido(datos.getSegundosAtendiendo(), datos.getSegundosDesocupado());
+                    	System.out.println(datos.toString());
                     }
                     
                    /* if (object instanceof String) { 

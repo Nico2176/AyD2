@@ -12,6 +12,11 @@ import java.awt.BorderLayout;
 import javax.swing.JButton;
 import java.awt.GridLayout;
 import java.awt.Color;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.FlowLayout;
+import java.awt.CardLayout;
+import javax.swing.BoxLayout;
 
 public class VentanaServer extends JFrame implements Ivista {
 
@@ -31,6 +36,7 @@ public class VentanaServer extends JFrame implements Ivista {
     private JButton btnNewButton;
     private JLabel lblOnOff;
     private int x=0;
+    private JButton btnNewButton_1;
 
     /**
      * Launch the application.
@@ -60,6 +66,7 @@ public class VentanaServer extends JFrame implements Ivista {
         panel = new JPanel();
         panel.setBackground(SystemColor.activeCaption);
         getContentPane().add(panel, BorderLayout.NORTH);
+        panel.setLayout(new CardLayout(0, 0));
 
         panel_1 = new JPanel();
         panel_1.setBackground(SystemColor.activeCaption);
@@ -114,6 +121,12 @@ public class VentanaServer extends JFrame implements Ivista {
         btnNewButton = new JButton("Iniciar Server");
         btnNewButton.setFont(new Font("Microsoft YaHei", Font.PLAIN, 12));
         panel_9.add(btnNewButton);
+        
+        btnNewButton_1 = new JButton("Estadísticas");
+        btnNewButton_1.setEnabled(false);
+        btnNewButton_1.setFont(new Font("Microsoft YaHei", Font.PLAIN, 12));
+        btnNewButton_1.setActionCommand("Estadisticas");
+        panel_9.add(btnNewButton_1);
     }
     
     
@@ -128,7 +141,11 @@ public class VentanaServer extends JFrame implements Ivista {
     
     
     
-    public void alta() {
+    public JButton getBtnNewButton_1() {
+		return btnNewButton_1;
+	}
+
+	public void alta() {
     	this.lblUsuariosConectados_1.setText("Usuarios conectados al servidor: "+ ++x);
     }
     
@@ -182,6 +199,7 @@ public class VentanaServer extends JFrame implements Ivista {
     @Override
     public void setActionListener(ActionListener actionListener) {
     	this.btnNewButton.addActionListener(actionListener);
+    	this.btnNewButton_1.addActionListener(actionListener);
         this.actionListener = actionListener;
     }
 
