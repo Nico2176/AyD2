@@ -170,12 +170,11 @@ public class Servidor extends Observable implements Runnable{
                     Object object = flujoEntrada.readObject();
                     if (object instanceof Datos) {
                     	Datos datos = (Datos) object;
-                    	if (datos.isSiguiente()) { // implica que un empleado pidió para siguiente. enviar a los monitores quién fue
+                    	if (datos.isSiguiente()) { // un empleado pidió para siguiente.  implica enviar a los monitores quién fue
                     		System.out.println(pre+"El server recibió DNI "+ datos.getDNISig() +" en una request para siguiente ");
                     		Servidor.getInstancia().getClientes().poll();
                     		Servidor.getInstancia().enviarQueue();  
                     		Servidor.getInstancia().enviarBoxMonitores(datos.getBox(),datos.getDNISig());
-                    		
                     	} else {                   
                     		
                     		
@@ -201,6 +200,8 @@ public class Servidor extends Observable implements Runnable{
                     	DatosEstadisticos datos = (DatosEstadisticos) object;
                     	Servidor.getInstancia().getEstadisticas().clienteAtendido(datos.getSegundosAtendiendo(), datos.getSegundosDesocupado());
                     	System.out.println(datos.toString());
+                    	Servidor.getInstancia().setChanged();
+                    	Servidor.getInstancia().notifyObservers(Servidor.getInstancia().getEstadisticas());
                     }
                     
                    /* if (object instanceof String) { 
