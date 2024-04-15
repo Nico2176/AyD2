@@ -36,17 +36,13 @@ public class SistemaMonitor extends Observable implements Runnable {
 		}
 	}
 	
-	public void conectar(String host, int puerto) { 
-        try {
+	public void conectar(String host, int puerto) throws Exception { 
             this.socket = new Socket(host, puerto); 
             System.out.println("Empleado conectado con el servidor, puerto del socket: "+ this.socket.getLocalPort());
             this.flujoSalida = new ObjectOutputStream(socket.getOutputStream());
             this.flujoEntrada = new ObjectInputStream(socket.getInputStream());
             this.identificaMonitor();
-            
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
+ 
     }
 
 	public void iniciarHilo() {

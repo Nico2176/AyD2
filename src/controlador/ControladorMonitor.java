@@ -9,6 +9,8 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Queue;
 
+import javax.swing.JOptionPane;
+
 import modelo.Cliente;
 import modelo.Datos;
 import negocio.SistemaClientes;
@@ -26,7 +28,12 @@ public class ControladorMonitor implements ActionListener, Observer {
 		this.vista.setActionListener(this);
 		this.vista.mostrar();
 		SistemaMonitor.getInstancia().addObserver(this);
-		SistemaMonitor.getInstancia().conectar("localhost", 1);
+		try {
+			SistemaMonitor.getInstancia().conectar("localhost", 1);
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, "Servidor no disponible", "Error", JOptionPane.ERROR_MESSAGE);
+			System.exit(0);
+		}
 		SistemaMonitor.getInstancia().iniciarHilo();
 		try {
 			

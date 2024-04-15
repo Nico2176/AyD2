@@ -40,7 +40,7 @@ public class ControladorCliente implements ActionListener {
 					JOptionPane.showMessageDialog(null, "Registro exitoso");
 				} catch (Exception e1) {
 					 System.out.println(e1.getMessage());
-					 JOptionPane.showMessageDialog(null, "Ha ocurrido un error.", "Error", JOptionPane.ERROR_MESSAGE);
+					 JOptionPane.showMessageDialog(null, "Servidor no disponible.", "Error", JOptionPane.ERROR_MESSAGE);
 				} 
 				
 				
