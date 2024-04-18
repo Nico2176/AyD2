@@ -57,8 +57,10 @@ public class ControladorServer implements ActionListener, Observer {
 	public void update(Observable o, Object arg) {
 		VentanaServer ventana = (VentanaServer) this.vista;
 		if (arg instanceof Estadisticas) {
-			Estadisticas estadisticas = (Estadisticas) arg;
-			this.ventanaEstadisticas.actualizarEstadisticas(estadisticas.getClientesAtendidos(), estadisticas.getSegundosAtendiendo(), estadisticas.getSegundosDesocupado(), estadisticas.getSegundosTotales(), estadisticas.getPromedioTiempoAtencion(), estadisticas.getPromedioxHora());
+			if (this.ventanaEstadisticas!=null) {
+				Estadisticas estadisticas = (Estadisticas) arg;
+				this.ventanaEstadisticas.actualizarEstadisticas(estadisticas.getClientesAtendidos(), estadisticas.getSegundosAtendiendo(), estadisticas.getSegundosDesocupado(), estadisticas.getSegundosTotales(), estadisticas.getPromedioTiempoAtencion(), estadisticas.getPromedioxHora());
+			}
 		} else {
 			String cad = (String) arg;
 			System.out.println("Al observer servidor le llegó "+ cad);

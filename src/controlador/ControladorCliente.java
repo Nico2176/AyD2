@@ -48,6 +48,16 @@ public class ControladorCliente implements ActionListener {
 			} else { //bien
 				JOptionPane.showMessageDialog(null, "DNI inválido, vuelva a ingresar");
 			}
-		}
+		} else if (comando.length()==1 && Character.isDigit(comando.charAt(0))){
+			VentanaRegistro ventanaR = (VentanaRegistro) this.vista;
+			String textoActual = ventanaR.getTextField().getText();
+			ventanaR.getTextField().setText(textoActual.concat(comando));
+	   } else if (comando.equalsIgnoreCase("Borrar")) {
+		   VentanaRegistro ventanaR = (VentanaRegistro) this.vista;
+		   String textoActual = ventanaR.getTextField().getText();
+		   ventanaR.getTextField().setText(textoActual.substring(0,textoActual.length()-1));
+	   }
+		
+	
 	}
 }
