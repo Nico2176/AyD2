@@ -1,0 +1,6 @@
+JAVA SE-17
+
+
+-Ejecutar servidor.jar y dar click en "Iniciar Server"
+-Ejecutar personal.jar y monitor.jar por cada dispositivo presente en el sistema según corresponda 
+-Ejecutar cliente.jar y el sistema está listo para ser utilizado
