@@ -24,6 +24,7 @@ public class Servidor extends Observable implements Runnable{
 	
 	public static Servidor instancia;
 	private Socket socket;
+	private Socket socketDisponibilidad;
 	private ServerSocket socketServer;
 	private Queue<Cliente> clientes = new LinkedList<>();
 	private ArrayList<Socket> sockets = new ArrayList<Socket>();
@@ -41,7 +42,24 @@ public class Servidor extends Observable implements Runnable{
 	
 	
 	
-	
+
+
+
+
+	public Socket getSocketDisponibilidad() {
+		return socketDisponibilidad;
+	}
+
+
+
+
+	public void setSocketDisponibilidad(Socket socketDisponibilidad) {
+		this.socketDisponibilidad = socketDisponibilidad;
+	}
+
+
+
+
 	public Estadisticas getEstadisticas() {
 		return estadisticas;
 	}
@@ -193,6 +211,12 @@ public class Servidor extends Observable implements Runnable{
                     	} else if (x==21) {
                     		System.out.println(pre+"Se agregó un nuevo empleado al sistema");
                     		Servidor.getInstancia().enviarBox(socket);    //envio el numero de box que le corresponde al empleado que acaba de conectarse
+                    	} else if (x==123) {
+                    		System.out.println("Se agregó un monitor de disponibilidad al servidor");
+                    		Servidor.getInstancia().setSocketDisponibilidad(socket);
+                    		//System.out.println(pre+"Output stream para el socket del monitor disponibilidad: "+ socket.getOutputStream());
+                    		Thread hiloHB = new Thread(new EnviaHeartBeat(socket));
+                    		hiloHB.run();
                     	}
                     		
                     	
@@ -241,10 +265,50 @@ public class Servidor extends Observable implements Runnable{
                     }
             	
             } catch (Exception e) {
-            	System.out.println(pre+"Excepcion "+ e.getMessage());
+            	System.out.println(pre+"Excepcion recibiendo datos "+ e.getMessage());
             	
             }
         }
 	}
+	
+	
+	private class EnviaHeartBeat implements Runnable{
+		private Socket socketMonitor;
+		
+		public EnviaHeartBeat(Socket socketMonitor) {
+			this.socketMonitor = socketMonitor;
+		}
+
+
+	
+		
+
+		@Override
+		public void run() {
+			ObjectOutputStream flujo;
+			try {
+				
+				while(true) {
+					try {
+						flujo = new ObjectOutputStream(socket.getOutputStream());
+						System.out.println(pre+"PUM PUM");
+						flujo.writeObject("PUM PUM"); //es el heartbeat, ahre 
+						Thread.sleep(2000);
+					} catch (IOException | InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			
+		}
+		
+		
+	}
+	
 }
 
