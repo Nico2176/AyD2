@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Timer;
@@ -16,11 +17,19 @@ import modelo.Cliente;
 public class MonitorDisponibilidad implements Runnable {
 
 	private Socket socketPrimario;
+	private Socket socketSecundario;
 	private ObjectOutputStream flujoSalida;
 	private ObjectInputStream flujoEntrada;
+	private ObjectOutputStream flujoSalidaSecundario;
+	private ObjectInputStream flujoEntradaSecundario;
 	private String pre="[MONITOR]";
+	private Queue<Cliente> clientes = new LinkedList<>();
 	
 	
+	public ObjectOutputStream getFlujoSalidaSecundario() {
+		return flujoSalidaSecundario;
+	}
+
 	public MonitorDisponibilidad() {
 		try {
 			this.conectar("localhost", 1);
@@ -38,6 +47,10 @@ public class MonitorDisponibilidad implements Runnable {
             this.flujoSalida = new ObjectOutputStream(socketPrimario.getOutputStream());
             this.flujoEntrada = new ObjectInputStream(socketPrimario.getInputStream());
             this.flujoSalida.writeObject(123);
+            this.socketSecundario = new Socket(host, 2); 
+            this.flujoSalidaSecundario = new ObjectOutputStream(socketSecundario.getOutputStream());
+            this.flujoEntradaSecundario = new ObjectInputStream(socketSecundario.getInputStream());
+            this.flujoSalidaSecundario.writeObject(123);
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
@@ -68,8 +81,9 @@ public class MonitorDisponibilidad implements Runnable {
 							timer.schedule(tarea, tiempoEspera);       //tarea que dice qwue si pasan tiempoEspera segundos, no se recibio nada, tonces esta caido
 						} else 
 							System.out.println("recibí basura");
-					} else {
-						System.out.println(pre+"Recibi basura");
+					} else if (object instanceof List){
+						this.clientes= (Queue<Cliente>) object;
+						System.out.println(pre+"Actualicé la lista de clientes en el monitor de disponibilidad "+ this.clientes.toString());
 					}
 					
 					
@@ -101,7 +115,12 @@ public class MonitorDisponibilidad implements Runnable {
         @Override
         public void run() {
                 System.err.println(pre + "Tiempo de espera excedido. No se recibió el objeto a tiempo.");
-                //desde aquí se debería enviar la orden para cambiar de servidor o lo que fuere.
+                try {
+                	System.out.println("Enviando señal de activación al servidor secundario");
+					flujoSalidaSecundario.writeObject(17); //codigo de falla de server
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 
         }
     }	

@@ -5,17 +5,25 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import modelo.Cliente;
 
-public class SistemaClientes {
+public class SistemaClientes implements Runnable{
 	private static SistemaClientes instancia;
 	private Socket socket;
+	private Socket socketSecundario;
+	private boolean principalActivo=true;
 	private ObjectOutputStream flujoSalida;
     private ObjectInputStream flujoEntrada;
+    private ObjectOutputStream flujoSalidaSecundario;
+    private ObjectInputStream flujoEntradaSecundario;
+    private String pre="[CLIENTE]";
 	private ArrayList<Cliente> pendientes = new ArrayList<Cliente>();
+	private Thread hilo;
 	
 	public static SistemaClientes getInstancia() {
 		if (instancia == null)
@@ -40,21 +48,52 @@ public class SistemaClientes {
 	public void conectar(String host, int puerto) throws Exception{ 
         try {
             this.socket = new Socket(host, puerto); 
-            System.out.println("Cliente conectado con el servidor, puerto del socket: "+ this.socket.getLocalPort());
+            this.socketSecundario = new Socket("localhost",2);
+            System.out.println(pre+"Cliente conectado con el servidor, puerto del socket: "+ this.socket.getLocalPort());
             this.flujoSalida = new ObjectOutputStream(socket.getOutputStream());
             this.flujoEntrada = new ObjectInputStream(socket.getInputStream());
+            this.flujoSalidaSecundario = new ObjectOutputStream(socketSecundario.getOutputStream());
+            this.flujoEntradaSecundario = new ObjectInputStream(socketSecundario.getInputStream());
+            this.hilo = new Thread (this);
+            hilo.start();
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
     }
 	
 	public void enviarDatos(String DNI) throws Exception{
-			System.out.println("Enviando datos al servidor");
+		if (this.principalActivo) {
+			System.out.println(pre+"Enviando datos al servidor principal");
 			this.flujoSalida.writeObject(new Cliente(DNI));
-			System.out.println("Datos enviados al servidor");
-
-		
-		
+			System.out.println(pre+"Datos enviados al servidor principal");
+		} else {
+			System.out.println(pre+"Enviando datos al servidor secundario");
+			this.flujoSalidaSecundario.writeObject(new Cliente(DNI));
+			System.out.println(pre+"Datos enviados al servidor secundario");	
+		}	
 	}
 
+
+	@Override
+	public void run() {
+		while (true) {
+			try {
+					System.out.println(pre+"Escuchando a ver si cambia el servidor!!!");
+					ObjectInputStream flujo = new ObjectInputStream(this.socketSecundario.getInputStream());  ////?????????????????? no tocar, por algun motivo no funciona con el input original y tuve que crear este xD
+					Object object =   flujo.readObject();
+					System.out.println(pre+"Recibió el objeto "+ object.toString());
+					if (object instanceof Integer) {
+						int x = (int) object;
+						if (x==17) {
+							System.out.println("Cambiando a servidor secundario!!");
+							this.principalActivo=false;
+							return;
+						}
+					}
+									
+				}	catch (Exception e) {
+					
+				}
+}
+}
 }

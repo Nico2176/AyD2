@@ -30,7 +30,9 @@ public class Servidor extends Observable implements Runnable{
 	private ArrayList<Socket> sockets = new ArrayList<Socket>();
 	private ArrayList<Socket> monitores = new ArrayList<Socket>();
 	private static int boxes=0;
+	private int rol;
 	private String pre="[SERVER]";
+	private boolean activo=true;   //si no está activo solo recopila datos, pero no envía, en un principio seria el servidor secundario (redundancia activa) 
 	private Estadisticas estadisticas = new Estadisticas();
 	
 	public static Servidor getInstancia() {
@@ -42,6 +44,26 @@ public class Servidor extends Observable implements Runnable{
 	
 	
 	
+
+
+
+
+	public boolean isActivo() {
+		return activo;
+	}
+
+
+
+
+
+
+
+	public void setActivo(boolean activo) {
+		this.activo = activo;
+	}
+
+
+
 
 
 
@@ -87,7 +109,12 @@ public class Servidor extends Observable implements Runnable{
 
 
 
-	public void abrirServer() {
+	public void abrirServer(int rol) {
+		this.rol=rol;
+		this.pre="SERVER["+ rol +"]";
+		if (rol==2) {
+			this.activo=false;     //si es el servidor secundario, en un principio no estará activo (pero si recibe datos)
+		}
 		Thread hilo = new Thread(this);
         hilo.start();
 	}
@@ -110,7 +137,12 @@ public class Servidor extends Observable implements Runnable{
 	@Override
     public void run() {
             try {
-            	int puerto = 1; //hardcodeado por ahora
+            	int puerto=0;
+            	if (this.rol==1) {
+            		puerto = 1;} //hardcodeado por ahora
+            	else if (this.rol==2) {
+            		puerto=2;}
+            	
 				this.socketServer = new ServerSocket(puerto);
 				System.out.println(pre+"Servidor iniciado. Puerto: " + puerto);
 				while (true) {
@@ -143,6 +175,21 @@ public class Servidor extends Observable implements Runnable{
 		} catch (IOException e) {
 			System.out.println(pre+"Exception enviando el box actual "+ e.toString());
 		}
+	}
+	
+	private void notificaCambioServidor() {
+		Iterator<Socket> iterador = this.sockets.iterator();
+ 		while (iterador.hasNext()) {
+ 			Socket aux = iterador.next();
+			try {
+				ObjectOutputStream flujo = new ObjectOutputStream(aux.getOutputStream());
+				System.out.println(pre+"Notificando del cambio de servidor a "+ aux.getPort());
+                flujo.writeObject(17);
+                flujo.flush();
+			} catch (IOException e) {
+				System.out.println(pre+"Excepcion enviando cambiando de servidor: "+ e.getMessage());
+			}
+	}
 	}
 	
 	
@@ -181,8 +228,10 @@ public class Servidor extends Observable implements Runnable{
             	System.out.println(pre+"Clase escuchadora creada xd");
             	ObjectInputStream flujoEntrada = new ObjectInputStream(socket.getInputStream());
         	    ObjectOutputStream flujoSalida = new ObjectOutputStream(socket.getOutputStream());
-        	    Servidor.getInstancia().enviarQueue();        //cuando uno nuevo se conecta, envio las queues nuevamente para que si ya habia empleados, se le carguen los datos también.
-        	  //  Servidor.getInstancia().enviarBox(socket);    //envio el numero de box que le corresponde al empleado que acaba de conectarse
+        	    if (Servidor.this.isActivo()) {
+        	    	Servidor.this.enviarQueue(); 
+        	    }       //cuando uno nuevo se conecta, envio las queues nuevamente para que si ya habia empleados, se le carguen los datos también.
+        	  //  Servidor.this.enviarBox(socket);    //envio el numero de box que le corresponde al empleado que acaba de conectarse
             	while (true) {	
             		System.out.println(pre+"Escuchando...........");
                     Object object = flujoEntrada.readObject();
@@ -190,9 +239,11 @@ public class Servidor extends Observable implements Runnable{
                     	Datos datos = (Datos) object;
                     	if (datos.isSiguiente()) { // un empleado pidió para siguiente.  implica enviar a los monitores quién fue
                     		System.out.println(pre+"El server recibió DNI "+ datos.getDNISig() +" en una request para siguiente ");
-                    		Servidor.getInstancia().getClientes().poll();
-                    		Servidor.getInstancia().enviarQueue();  
-                    		Servidor.getInstancia().enviarBoxMonitores(datos.getBox(),datos.getDNISig());
+                    		Servidor.this.getClientes().poll();
+                    		if (Servidor.this.isActivo()) {
+	                    		Servidor.this.enviarQueue();  
+	                    		Servidor.this.enviarBoxMonitores(datos.getBox(),datos.getDNISig());
+                    		}
                     	} else {                   
                     		
                     		
@@ -201,31 +252,40 @@ public class Servidor extends Observable implements Runnable{
                     } else if (object instanceof Cliente) {        //es un registro
                     	Cliente cliente = (Cliente) object;
                     	System.out.println(pre+"El servidor recibió el DNI "+ cliente.getDNI());
-                		Servidor.getInstancia().getClientes().add(cliente); //agrego al cliente a una coleccion de clientes
-                		Servidor.getInstancia().enviarQueue(); //enviar la queue actualziada a todos los empleados
+                		Servidor.this.getClientes().add(cliente); //agrego al cliente a una coleccion de clientes
+                		if (Servidor.this.isActivo()) {
+                			Servidor.this.enviarQueue(); //enviar la queue actualziada a todos los empleados
+                		}
                     } else if (object instanceof Integer) {     //identificador de monitores
                     	int x = (int) object;
                     	if (x==2176) { //codigo que dan los monitores para identificarse
                     		System.out.println(pre+"Se agrego un nuevo monitor al sistema");
-                    		Servidor.getInstancia().getMonitores().add(socket);
+                    		Servidor.this.getMonitores().add(socket);
                     	} else if (x==21) {
                     		System.out.println(pre+"Se agregó un nuevo empleado al sistema");
-                    		Servidor.getInstancia().enviarBox(socket);    //envio el numero de box que le corresponde al empleado que acaba de conectarse
+                    		if (Servidor.this.isActivo()) {
+                    			Servidor.this.enviarBox(socket);    //envio el numero de box que le corresponde al empleado que acaba de conectarse
+                    		}
                     	} else if (x==123) {
                     		System.out.println("Se agregó un monitor de disponibilidad al servidor");
-                    		Servidor.getInstancia().setSocketDisponibilidad(socket);
+                    		Servidor.this.setSocketDisponibilidad(socket);
                     		//System.out.println(pre+"Output stream para el socket del monitor disponibilidad: "+ socket.getOutputStream());
-                    		Thread hiloHB = new Thread(new EnviaHeartBeat(socket));
-                    		hiloHB.run();
+                    		if (Servidor.this.isActivo()) {
+	                    		Thread hiloHB = new Thread(new EnviaHeartBeat(socket));
+	                    		hiloHB.start();
+                    		}
+                    	} else if (x==17) {
+                    		Servidor.this.setActivo(true);
+                    		Servidor.this.notificaCambioServidor();
                     	}
                     		
                     	
                     } else if (object instanceof DatosEstadisticos) {
                     	DatosEstadisticos datos = (DatosEstadisticos) object;
-                    	Servidor.getInstancia().getEstadisticas().clienteAtendido(datos.getSegundosAtendiendo(), datos.getSegundosDesocupado());
+                    	Servidor.this.getEstadisticas().clienteAtendido(datos.getSegundosAtendiendo(), datos.getSegundosDesocupado());
                     	System.out.println(datos.toString());
-                    	Servidor.getInstancia().setChanged();
-                    	Servidor.getInstancia().notifyObservers(Servidor.getInstancia().getEstadisticas());
+                    	Servidor.this.setChanged();
+                    	Servidor.this.notifyObservers(Servidor.this.getEstadisticas());
                     }
                     
                    /* if (object instanceof String) { 
@@ -234,12 +294,12 @@ public class Servidor extends Observable implements Runnable{
                     		
                     		
                     	} else if (cadena.equalsIgnoreCase("Siguiente")) { //Un empleado llama al siguiente en la queue
-                    		//Servidor.getInstancia().getClientes().poll();
-                    		Servidor.getInstancia().enviarQueue();                  		
+                    		//Servidor.this.getClientes().poll();
+                    		Servidor.this.enviarQueue();                  		
                     	}  else{//es un DNI (x descarte)
                     		System.out.println("El servidor recibió el DNI "+ cadena);
-                    		Servidor.getInstancia().getClientes().add(new Cliente(cadena)); //agrego al cliente a una coleccion de clientes
-                    		Servidor.getInstancia().enviarQueue(); //enviar la queue actualziada a todos los empleados
+                    		Servidor.this.getClientes().add(new Cliente(cadena)); //agrego al cliente a una coleccion de clientes
+                    		Servidor.this.enviarQueue(); //enviar la queue actualziada a todos los empleados
                     		
                     		 
                     	 			
@@ -258,8 +318,8 @@ public class Servidor extends Observable implements Runnable{
                     		
                     		
                     	}else if (object instanceof Datos) {
-                    		Servidor.getInstancia().getClientes().poll();
-                    		Servidor.getInstancia().enviarQueue();
+                    		Servidor.this.getClientes().poll();
+                    		Servidor.this.enviarQueue();
                     	} */
                     	
                     }
@@ -279,10 +339,6 @@ public class Servidor extends Observable implements Runnable{
 			this.socketMonitor = socketMonitor;
 		}
 
-
-	
-		
-
 		@Override
 		public void run() {
 			ObjectOutputStream flujo;
@@ -290,7 +346,7 @@ public class Servidor extends Observable implements Runnable{
 				
 				while(true) {
 					try {
-						flujo = new ObjectOutputStream(socket.getOutputStream());
+						flujo = new ObjectOutputStream(socketMonitor.getOutputStream());
 						System.out.println(pre+"PUM PUM");
 						flujo.writeObject("PUM PUM"); //es el heartbeat, ahre 
 						Thread.sleep(2000);

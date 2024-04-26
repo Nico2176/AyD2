@@ -53,6 +53,7 @@ public class VentanaServer extends JFrame implements Ivista {
             }
         });
     }
+    
 
     /**
      * Create the application.

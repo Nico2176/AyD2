@@ -2,10 +2,10 @@ package main;
 
 import controlador.ControladorServer;
 
-public class MainServer {
+public class MainServerSecundario {
 	public static void main(String[] args) {
 		@SuppressWarnings("unused")
-		ControladorServer controlador = new ControladorServer(1);
+		ControladorServer controlador = new ControladorServer(2);
 	}
 
 }
