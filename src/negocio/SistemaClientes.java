@@ -45,7 +45,7 @@ public class SistemaClientes implements Runnable{
 	
 	
 	
-	public void conectar(String host, int puerto) throws Exception{ 
+	public void conectar(String host, int puerto) throws Exception{ //falta validar cuando alguno está caído desde un principio y esas cosiñas
         try {
             this.socket = new Socket(host, puerto); 
             this.socketSecundario = new Socket("localhost",2);
@@ -62,7 +62,29 @@ public class SistemaClientes implements Runnable{
     }
 	
 	public void enviarDatos(String DNI) throws Exception{
-		if (this.principalActivo) {
+		System.out.println(pre+"Enviando registro a AMBOS servidores");
+		boolean flag=false;
+		try {         //trata de enviar a los dos servidores
+			this.flujoSalida.writeObject(new Cliente(DNI));
+			flag=true; //para el caso que el secundario está caido pero el primario no, muy chancha esta flag ahre 
+			this.flujoSalidaSecundario.writeObject(new Cliente(DNI));
+		} catch (Exception e) {     //si falla, trata de enviar solo al segundo
+			try {
+				this.flujoSalidaSecundario.writeObject(new Cliente(DNI));
+			} catch (Exception e1) {   //y si falla es que ambos están caídos xd 
+				System.out.println(pre+"Entrando al catch ese ");
+				if (flag) {
+					System.out.println(pre+"Se enviaron datos solo al sv principal");
+				} else {
+					throw new Exception();
+				}
+				
+			}
+			
+		}
+		
+		
+	   /*	if (this.principalActivo) {
 			System.out.println(pre+"Enviando datos al servidor principal");
 			this.flujoSalida.writeObject(new Cliente(DNI));
 			System.out.println(pre+"Datos enviados al servidor principal");
@@ -70,7 +92,7 @@ public class SistemaClientes implements Runnable{
 			System.out.println(pre+"Enviando datos al servidor secundario");
 			this.flujoSalidaSecundario.writeObject(new Cliente(DNI));
 			System.out.println(pre+"Datos enviados al servidor secundario");	
-		}	
+		}	*/
 	}
 
 

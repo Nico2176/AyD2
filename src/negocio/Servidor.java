@@ -185,6 +185,7 @@ public class Servidor extends Observable implements Runnable{
 				ObjectOutputStream flujo = new ObjectOutputStream(aux.getOutputStream());
 				System.out.println(pre+"Notificando del cambio de servidor a "+ aux.getPort());
                 flujo.writeObject(17);
+               // flujo.writeObject(this.clientes);
                 flujo.flush();
 			} catch (IOException e) {
 				System.out.println(pre+"Excepcion enviando cambiando de servidor: "+ e.getMessage());
@@ -226,6 +227,7 @@ public class Servidor extends Observable implements Runnable{
         public void run() {
             try {
             	System.out.println(pre+"Clase escuchadora creada xd");
+            	System.out.println(pre+"Queue: "+ Servidor.this.getClientes().toString());
             	ObjectInputStream flujoEntrada = new ObjectInputStream(socket.getInputStream());
         	    ObjectOutputStream flujoSalida = new ObjectOutputStream(socket.getOutputStream());
         	    if (Servidor.this.isActivo()) {
@@ -251,7 +253,7 @@ public class Servidor extends Observable implements Runnable{
                     	
                     } else if (object instanceof Cliente) {        //es un registro
                     	Cliente cliente = (Cliente) object;
-                    	System.out.println(pre+"El servidor recibió el DNI "+ cliente.getDNI());
+                    	System.out.println(pre+"El servidor numero "+ rol +" recibió el DNI "+ cliente.getDNI());
                 		Servidor.this.getClientes().add(cliente); //agrego al cliente a una coleccion de clientes
                 		if (Servidor.this.isActivo()) {
                 			Servidor.this.enviarQueue(); //enviar la queue actualziada a todos los empleados
@@ -277,6 +279,7 @@ public class Servidor extends Observable implements Runnable{
                     	} else if (x==17) {
                     		Servidor.this.setActivo(true);
                     		Servidor.this.notificaCambioServidor();
+                    		Servidor.this.enviarQueue();
                     	}
                     		
                     	
