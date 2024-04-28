@@ -11,6 +11,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Queue;
 
@@ -118,6 +119,24 @@ public class Servidor extends Observable implements Runnable{
            
     }
 	
+	private void clienteExiste(Socket socket) {
+		try {
+			ObjectOutputStream flujo = new ObjectOutputStream(socket.getOutputStream());
+			flujo.writeObject(404);
+		} catch (IOException e) {
+			System.out.println(pre+"Exception enviando error de cliente existente "+ e.toString());
+		}
+	}
+	
+	private void registroExitoso(Socket socket) {
+		try {
+			ObjectOutputStream flujo = new ObjectOutputStream(socket.getOutputStream());
+			flujo.writeObject(505);
+		} catch (IOException e) {
+			System.out.println(pre+"Exception enviando registro exitoso"+ e.toString());
+		}
+	}
+	
 	private void enviarBox(Socket socket) {
 		try {
 			ObjectOutputStream flujo = new ObjectOutputStream(socket.getOutputStream());
@@ -128,7 +147,8 @@ public class Servidor extends Observable implements Runnable{
 	}
 	
 	
-	public void enviarBoxMonitores(int box, String DNISig) { //envío a todos los monitores el box que hizo el request de siguiente
+	
+	private void enviarBoxMonitores(int box, String DNISig) { //envío a todos los monitores el box que hizo el request de siguiente
 		Iterator<Socket> iterador = this.monitores.iterator();
  		while (iterador.hasNext()) {
  			Socket aux = iterador.next();
@@ -144,6 +164,17 @@ public class Servidor extends Observable implements Runnable{
 				System.out.println(pre+"Excepcion enviando queues: "+ e.getMessage());
 			}
 	}
+	}
+	
+	private boolean existeDNI(String DNI) {
+		int i=0;
+		List<Cliente> lista = new LinkedList<>(clientes);
+		while (i<lista.size() && !lista.get(i).getDNI().equals(DNI)) {
+			i++;
+		}
+		
+		return i!=lista.size();
+
 	}
 
 	
@@ -183,8 +214,15 @@ public class Servidor extends Observable implements Runnable{
                     } else if (object instanceof Cliente) {        //es un registro
                     	Cliente cliente = (Cliente) object;
                     	System.out.println(pre+"El servidor recibió el DNI "+ cliente.getDNI());
-                		Servidor.getInstancia().getClientes().add(cliente); //agrego al cliente a una coleccion de clientes
-                		Servidor.getInstancia().enviarQueue(); //enviar la queue actualziada a todos los empleados
+                    	if (Servidor.getInstancia().existeDNI(cliente.getDNI())){
+                    		System.out.println("El DNI existe");
+                    		Servidor.getInstancia().clienteExiste(socket);
+                    	} else {
+                    		System.out.println("El DNI no estaba en el sistema. Registrando");
+                    		Servidor.getInstancia().registroExitoso(socket);
+	                		Servidor.getInstancia().getClientes().add(cliente); //agrego al cliente a una coleccion de clientes
+	                		Servidor.getInstancia().enviarQueue(); //enviar la queue actualziada a todos los empleados
+                    	}
                     } else if (object instanceof Integer) {     //identificador de monitores
                     	int x = (int) object;
                     	if (x==2176) { //codigo que dan los monitores para identificarse

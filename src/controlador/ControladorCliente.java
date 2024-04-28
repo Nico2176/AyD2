@@ -37,7 +37,7 @@ public class ControladorCliente implements ActionListener {
 				try {		
 					SistemaClientes.getInstancia().enviarDatos(DNI);
 					ventanaR.getTextField().setText("");
-					JOptionPane.showMessageDialog(null, "Registro exitoso");
+					//JOptionPane.showMessageDialog(null, "Registro exitoso");
 				} catch (Exception e1) {
 					 System.out.println(e1.getMessage());
 					 JOptionPane.showMessageDialog(null, "Servidor no disponible.", "Error", JOptionPane.ERROR_MESSAGE);
