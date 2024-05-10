@@ -114,6 +114,24 @@ public class Servidor extends Observable implements Runnable{
 		this.pre="SERVER["+ rol +"]";
 		if (rol==2) {
 			this.activo=false;     //si es el servidor secundario, en un principio no estará activo (pero si recibe datos)
+		} else {
+			try {
+				Socket socket = new Socket("localhost",777);  //conecto al monitor
+				ObjectOutputStream flujo = new ObjectOutputStream(socket.getOutputStream());
+				flujo.writeObject(777); //el servidor primario siempre avisará al monitor cuando fue encendido (para que cuando esté el secundario activo, vuelva el primario a ser el que está en uso)
+			} catch (Exception e) {
+				System.out.println("No enviamos nada al monitor de disponibilidad pues aun no existe");
+			}
+			
+			/*if (this.socketDisponibilidad!=null) { //el servidor primario siempre avisará al monitor cuando fue encendido (para que cuando esté el secundario activo, vuelva el primario a ser el que está en uso)
+				ObjectOutputStream flujo;
+				try {
+					flujo = new ObjectOutputStream(this.socketDisponibilidad.getOutputStream());
+					flujo.writeObject(777);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}	
+			} */
 		}
 		Thread hilo = new Thread(this);
         hilo.start();
@@ -177,14 +195,14 @@ public class Servidor extends Observable implements Runnable{
 		}
 	}
 	
-	private void notificaCambioServidor() {
+	private void notificaCambioServidor(int x) {
 		Iterator<Socket> iterador = this.sockets.iterator();
  		while (iterador.hasNext()) {
  			Socket aux = iterador.next();
 			try {
 				ObjectOutputStream flujo = new ObjectOutputStream(aux.getOutputStream());
 				System.out.println(pre+"Notificando del cambio de servidor a "+ aux.getPort());
-                flujo.writeObject(17);
+                flujo.writeObject(x);
                 flujo.flush();
 			} catch (IOException e) {
 				System.out.println(pre+"Excepcion enviando cambiando de servidor: "+ e.getMessage());
@@ -274,9 +292,12 @@ public class Servidor extends Observable implements Runnable{
 	                    		Thread hiloHB = new Thread(new EnviaHeartBeat(socket));
 	                    		hiloHB.start();
                     		}
-                    	} else if (x==17) {
+                    	} else if (x==17) {  //por convención quien recibirá estos parámetros es siempre el servidor secundario (enviados por el monitor de disponibilidad)
                     		Servidor.this.setActivo(true);
-                    		Servidor.this.notificaCambioServidor();
+                    		Servidor.this.notificaCambioServidor(17); //se cayo el primero, cambio al secundario
+                    	} else if (x==777) { //por convención quien recibirá estos parámetros es siempre el servidor secundario (enviados por el monitor de disponibilidad)
+                    		Servidor.this.setActivo(false);
+                    		Servidor.this.notificaCambioServidor(777); //volvió el primario
                     	}
                     		
                     	

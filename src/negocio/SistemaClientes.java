@@ -62,7 +62,23 @@ public class SistemaClientes implements Runnable{
     }
 	
 	public void enviarDatos(String DNI) throws Exception{
-		if (this.principalActivo) {
+		try {
+			System.out.println(pre+"Enviando datos al servidor principal");
+			this.flujoSalida.writeObject(new Cliente(DNI));
+			System.out.println(pre+"Datos enviados al servidor principal");	
+		} catch (Exception e) {
+			System.out.println(pre+"Error enviando datos el server principal. Está caído.");
+		}
+		
+		try {
+			System.out.println(pre+"Enviando datos al servidor secundario");
+			this.flujoSalidaSecundario.writeObject(new Cliente(DNI));
+			System.out.println(pre+"Datos enviados al servidor secundario");	
+		} catch (Exception e) {
+			System.out.println(pre+"Error enviando datos al server secundario. Está caído.");
+		}
+		
+	/*	if (this.principalActivo) {
 			System.out.println(pre+"Enviando datos al servidor principal");
 			this.flujoSalida.writeObject(new Cliente(DNI));
 			System.out.println(pre+"Datos enviados al servidor principal");
@@ -70,7 +86,7 @@ public class SistemaClientes implements Runnable{
 			System.out.println(pre+"Enviando datos al servidor secundario");
 			this.flujoSalidaSecundario.writeObject(new Cliente(DNI));
 			System.out.println(pre+"Datos enviados al servidor secundario");	
-		}	
+		}	*/
 	}
 
 
@@ -86,13 +102,23 @@ public class SistemaClientes implements Runnable{
 						int x = (int) object;
 						if (x==17) {
 							System.out.println("Cambiando a servidor secundario!!");
+							this.socket.close();
 							this.principalActivo=false;
-							return;
+						} else if (x==777) {
+							Thread.sleep(1000);  //un pequeño delay porque sino no le da tiempo a abrirse al servidor primario
+							System.out.println("Volvió el primario, cambiando nuevamente");
+							this.socket = new Socket("localhost", 1); 
+				            System.out.println(pre+"Cliente reconectado con el servidor principal "+ this.socket.getLocalPort());
+				            this.flujoSalida = new ObjectOutputStream(socket.getOutputStream());
+				            this.flujoEntrada = new ObjectInputStream(socket.getInputStream());
+							this.principalActivo=true;
+							
 						}
+						//return;
 					}
 									
 				}	catch (Exception e) {
-					
+					System.out.println(e.getMessage());
 				}
 }
 }

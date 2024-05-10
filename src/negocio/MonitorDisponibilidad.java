@@ -3,6 +3,7 @@ package negocio;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,23 +19,28 @@ public class MonitorDisponibilidad implements Runnable {
 
 	private Socket socketPrimario;
 	private Socket socketSecundario;
+	private ServerSocket socketServidor;
 	private ObjectOutputStream flujoSalida;
 	private ObjectInputStream flujoEntrada;
 	private ObjectOutputStream flujoSalidaSecundario;
 	private ObjectInputStream flujoEntradaSecundario;
 	private String pre="[MONITOR]";
 	private Queue<Cliente> clientes = new LinkedList<>();
+	private boolean principalActivo = true;
 	
 	
 	public ObjectOutputStream getFlujoSalidaSecundario() {
 		return flujoSalidaSecundario;
 	}
 
+	
+	
 	public MonitorDisponibilidad() {
 		try {
 			this.conectar("localhost", 1);
 			Thread hilo = new Thread(this);
 			hilo.run();
+			this.escucharConexiones();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, "Error! Servidor no disponible" + e.getMessage());
 		}
@@ -91,7 +97,7 @@ public class MonitorDisponibilidad implements Runnable {
 					
 					
 				} catch (ClassNotFoundException | IOException e) {
-					//System.out.println(pre+"Excepcion recibiendo datos "+ e.toString());
+					System.out.println(e.getMessage());
 					return;
 				}
 	    		
@@ -101,9 +107,98 @@ public class MonitorDisponibilidad implements Runnable {
 			e.printStackTrace();
 		}  ////?????????????????? no tocar, por algun motivo no funciona con el input original y tuve que crear este xD
 		
-			
-			
+	}
+	
+	
+	public void escucharConexiones() {
+		try {
+			this.socketServidor = new ServerSocket(777);
+			Thread escucha = new Thread (new EscuchaConexionServer(socketServidor));
+			escucha.start();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void entroConexion() {
+		try {
+			Thread.sleep(1000);
+		 	this.socketPrimario = new Socket("localhost", 1);
+			 this.flujoSalida = new ObjectOutputStream(socketPrimario.getOutputStream());
+		     this.flujoEntrada = new ObjectInputStream(socketPrimario.getInputStream());
+		     this.flujoSalida.writeObject(123);
+		     Thread hilo = new Thread(this);
+				hilo.start();
+		     
+		} catch (IOException | InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+       
 		
+	}
+	
+	class EscuchaConexionServer implements Runnable{
+		private ServerSocket socketServidor;
+		private Socket socket;
+
+		public EscuchaConexionServer(ServerSocket socketServidor) {
+			super();
+			this.socketServidor = socketServidor;
+		}
+
+
+		@Override
+		public void run() {
+			while (true) {
+				try {
+					socket = socketServidor.accept();
+					System.out.println(pre+"Ha entrado una conexion al servidor");  //cada vez que entra una conexión representa que el servidor primario se volvió a abrir, so envío señal de cambiar de server
+					flujoSalidaSecundario.writeObject(777);
+					MonitorDisponibilidad.this.entroConexion(); //reactivo el heartbeat
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}
+			
+		}
+		
+		
+		
+	}
+	
+	class escuchaDatosServer implements Runnable{
+
+		@Override
+		public void run() {
+			while (true) {
+				try {
+						System.out.println(pre+"Escuchando a ver si cambia el servidor!!!");
+						ObjectInputStream flujo = new ObjectInputStream(MonitorDisponibilidad.this.socketPrimario.getInputStream());  ////?????????????????? no tocar, por algun motivo no funciona con el input original y tuve que crear este xD
+						Object object =   flujo.readObject();
+						System.out.println(pre+"Recibió el objeto "+ object.toString());
+						if (object instanceof Integer) {
+							int x = (int) object;
+							if (x==777) {
+								if (MonitorDisponibilidad.this.principalActivo) {
+									System.out.println("Abriendo server primario por primera vez");
+								} else {
+									flujoSalidaSecundario.writeObject(777); //codigo de que volvió el primario
+									System.out.println("El servidor principal volvió a activarse luego de una caída");
+								}
+								
+
+							}
+						}
+										
+					}	catch (Exception e) {
+						System.out.println(pre+"Error escuchando objetos");
+					}
+	}
+		}
 		
 	}
 	
@@ -118,6 +213,7 @@ public class MonitorDisponibilidad implements Runnable {
                 try {
                 	System.out.println("Enviando señal de activación al servidor secundario");
 					flujoSalidaSecundario.writeObject(17); //codigo de falla de server
+					MonitorDisponibilidad.this.principalActivo=false; //seteo que el server principal no está activo
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

@@ -206,8 +206,10 @@ public class SistemaEmpleados extends Observable implements Runnable {
 						if (x==17) {
 							System.out.println(pre+"Se detectó una falla en el servidor principal, cambiando al secundario");
 							SistemaEmpleados.this.principalActivo=false;
-							SistemaEmpleados.this.socket.close();
-							return;
+							//SistemaEmpleados.this.socket.close();
+							//return;
+						} else if (x==777) {
+							SistemaEmpleados.this.principalActivo=true;
 						}
 					}
 				}
