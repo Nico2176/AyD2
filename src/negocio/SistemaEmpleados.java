@@ -66,10 +66,13 @@ public class SistemaEmpleados extends Observable implements Runnable {
 	}
 	
 	public void crearHilo() {
+		this.flag=true;
 		hilo = new Thread(this);
 		hilo.start();
 		hiloEscuchaSecundario = new Thread(new EscuchaCambioServer());
 		hiloEscuchaSecundario.start();
+		
+		
 	}
 
 	
@@ -134,22 +137,33 @@ public class SistemaEmpleados extends Observable implements Runnable {
             this.flujoSalidaSecundario = new ObjectOutputStream(socketSecundario.getOutputStream());
             this.flujoEntradaSecundario = new ObjectInputStream(socketSecundario.getInputStream());
             this.flujoSalidaSecundario.writeObject(21);
+            this.crearHilo();
         } 
 
 
-
+	public void reconecto(String host, int puerto) throws Exception{
+		this.socket = new Socket(host, puerto); 
+		System.out.println(pre+"Conectado con el servidor, puerto del socket: "+ this.socket.getLocalPort());
+		this.flujoSalida = new ObjectOutputStream(socket.getOutputStream());
+        this.flujoEntrada = new ObjectInputStream(socket.getInputStream());
+        this.flujoSalida.writeObject(21);
+        this.crearHilo();
+	}
 
 
 
 	@Override
 	public void run() {
 		System.out.println(pre+"Ejecutando hilo de empleado");
+	//	while (SistemaEmpleados.this.flag) {
 		while (true) {
 			try {
-				if (principalActivo) {
+				if (this.principalActivo) {
 					System.out.println(pre+"Escuchando al servidor principal........");
+					//Thread.sleep(300);
 					ObjectInputStream flujo = new ObjectInputStream(this.socket.getInputStream());  ////?????????????????? no tocar, por algun motivo no funciona con el input original y tuve que crear este xD
 					Object object =   flujo.readObject();
+					
 					System.out.println(pre+"Recibió el objeto "+ object.toString());
 					if (object instanceof List) { //recibió la queue de clientes actualizada
 						Queue<Cliente> clientes = (Queue<Cliente>) object;
@@ -164,41 +178,62 @@ public class SistemaEmpleados extends Observable implements Runnable {
 						notifyObservers(box);
 					}
 				} else { //si el principal no ta activo, recibe datos del secundario xd
-				System.out.println(pre+"Escuchando al servidor secundario........");
-				ObjectInputStream flujoS = new ObjectInputStream(this.socketSecundario.getInputStream());  ////?????????????????? no tocar, por algun motivo no funciona con el input original y tuve que crear este xD
-				Object object =   flujoS.readObject();
-				System.out.println(pre+"Recibió el objeto del sv secundario"+ object.toString());
-				if (object instanceof List) { //recibió la queue de clientes actualizada
-					Queue<Cliente> clientes = (Queue<Cliente>) object;
-					this.clientes= clientes;
-					this.setChanged();
-					notifyObservers(clientes);
-					//ControladorPersonal.getInstancia().printeaLista(clientes);
-					//actualizar ventana del empleado con la queue
-				} else if (object instanceof Integer) {
-					this.setChanged();
-					int box = (int) object;
-					notifyObservers(box);
-				}
+					System.out.println(pre+"Escuchando al servidor secundario........");
+					//ObjectInputStream flujoS = flujoEntradaOrdenTres;
+					ObjectInputStream flujoS = new ObjectInputStream(this.socketSecundario.getInputStream());  ////?????????????????? no tocar, por algun motivo no funciona con el input original y tuve que crear este xD
+					Object object =   flujoS.readObject();
+					System.out.println(pre+"Recibió el objeto del sv secundario"+ object.toString());
+					//flujoS=new ObjectInputStream(this.socketSecundario.getInputStream());  //esta linea la voy a dejar comentada porque estuve horas buscando un error y era esta linea aca nonsense, la odio ahre
+					if (object instanceof List) { //recibió la queue de clientes actualizada
+						Queue<Cliente> clientes = (Queue<Cliente>) object;
+						this.clientes= clientes;
+						this.setChanged();
+						notifyObservers(clientes);
+						//ControladorPersonal.getInstancia().printeaLista(clientes);
+						//actualizar ventana del empleado con la queue
+					} else if (object instanceof Integer) {
+						int x = (int) object;
+						if (x!=777) {
+							this.setChanged();
+							int box = (int) object;
+							notifyObservers(box);
+						} else if (x==777) {
+							System.out.println(pre+"Volvió el primario, cambiando nuevamente");
+							SistemaEmpleados.this.socket.close();
+							//SistemaEmpleados.this.socketSecundario.close();
+							Thread.sleep(100);  //un pequeño delay porque sino no le da tiempo a abrirse al servidor primario
+							SistemaEmpleados.this.reconecto("localhost", 1);
+				            this.principalActivo=true;
+				           // System.out.println("Interrumpiendo hilo de escucha");
+				            Thread.currentThread().interrupt();
+							return;
+						}
+						
+					}
 				
 					
 					
 				}	
-			} catch (ClassNotFoundException | IOException e) {
-				System.out.println(pre+"Excepcion recibiendo datos "+ e.toString());
+			} catch (Exception e) {
+				//e.printStackTrace();
+				System.out.println(pre+"Catcheamos excepcion recibiendo datos "+ e.toString());
 			}
-    		
-		}
+    		//return;
+		} 
 		
 	}
+	
+	private boolean flag=true;
+
 	
 	public class EscuchaCambioServer implements Runnable { //un hilo simplemente para q escuche cuando se cambia el servidor
 
 		@Override
 		public void run() {
 			try {
-				System.out.println("Escuchando al servidor secundario x las dudas...");
+				
 				while(true) {
+					System.out.println(pre+"Escuchando a ver si cambió el server");
 					ObjectInputStream flujo = new ObjectInputStream(SistemaEmpleados.this.socketSecundario.getInputStream());
 					Object object =   flujo.readObject();
 					if (object instanceof Integer) {
@@ -206,14 +241,30 @@ public class SistemaEmpleados extends Observable implements Runnable {
 						if (x==17) {
 							System.out.println(pre+"Se detectó una falla en el servidor principal, cambiando al secundario");
 							SistemaEmpleados.this.principalActivo=false;
-							//SistemaEmpleados.this.socket.close();
+							break;
 							//return;
-						} else if (x==777) {
+						} /* else if (x==777) {
+							Thread.sleep(1000);  //un pequeño delay porque sino no le da tiempo a abrirse al servidor primario
+							System.out.println(pre+"Volvió el primario, cambiando nuevamente");
+							SistemaEmpleados.this.socket.close();
+							SistemaEmpleados.this.socketSecundario.close();
+							SistemaEmpleados.this.conectar("localhost", 1);
 							SistemaEmpleados.this.principalActivo=true;
-						}
+
+							
+						/*	SistemaEmpleados.this.principalActivo=true;
+							SistemaEmpleados.this.socket = new Socket("localhost", 1);
+							SistemaEmpleados.this.flujoEntrada = new ObjectInputStream(socket.getInputStream());
+							SistemaEmpleados.this.flujoSalida = new ObjectOutputStream(socket.getOutputStream());
+							SistemaEmpleados.this.hilo.interrupt();
+							SistemaEmpleados.this.hilo = new Thread (SistemaEmpleados.this);
+							SistemaEmpleados.this.hilo.start();		// /*
+						} */
 					}
 				}
-			} catch (ClassNotFoundException | IOException e) {
+				return; //porque cuando cambia al servidor secundario debe dejar de leer en este hilo ya que entra en conflicto con la información que le llega del propio programa
+				
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

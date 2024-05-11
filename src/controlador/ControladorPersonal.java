@@ -65,7 +65,7 @@ public class ControladorPersonal implements ActionListener, Observer{
 			JOptionPane.showMessageDialog(null, "Servidor no disponible.", "Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
 		}
-		SistemaEmpleados.getInstancia().crearHilo();
+		// SistemaEmpleados.getInstancia().crearHilo();
     }
 	
 	@Override

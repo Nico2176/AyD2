@@ -370,6 +370,7 @@ public class Servidor extends Observable implements Runnable{
 						flujo = new ObjectOutputStream(socketMonitor.getOutputStream());
 						System.out.println(pre+"PUM PUM");
 						flujo.writeObject("PUM PUM"); //es el heartbeat, ahre 
+						flujo.flush();
 						Thread.sleep(2000);
 					} catch (IOException | InterruptedException e) {
 						// TODO Auto-generated catch block

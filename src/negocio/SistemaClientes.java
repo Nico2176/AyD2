@@ -105,7 +105,7 @@ public class SistemaClientes implements Runnable{
 							this.socket.close();
 							this.principalActivo=false;
 						} else if (x==777) {
-							Thread.sleep(1000);  //un pequeño delay porque sino no le da tiempo a abrirse al servidor primario
+							Thread.sleep(100);  //un pequeño delay porque sino no le da tiempo a abrirse al servidor primario
 							System.out.println("Volvió el primario, cambiando nuevamente");
 							this.socket = new Socket("localhost", 1); 
 				            System.out.println(pre+"Cliente reconectado con el servidor principal "+ this.socket.getLocalPort());

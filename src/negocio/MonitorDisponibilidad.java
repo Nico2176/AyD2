@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.time.LocalTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -14,6 +15,7 @@ import java.util.TimerTask;
 import javax.swing.JOptionPane;
 
 import modelo.Cliente;
+import vista.VentanaDisponibilidad;
 
 public class MonitorDisponibilidad implements Runnable {
 
@@ -25,8 +27,10 @@ public class MonitorDisponibilidad implements Runnable {
 	private ObjectOutputStream flujoSalidaSecundario;
 	private ObjectInputStream flujoEntradaSecundario;
 	private String pre="[MONITOR]";
+	private LocalTime horaActual;
 	private Queue<Cliente> clientes = new LinkedList<>();
 	private boolean principalActivo = true;
+	private VentanaDisponibilidad ventana;  //despues si anda bien lo abstraemos mas con la interfaz y otras herramientas
 	
 	
 	public ObjectOutputStream getFlujoSalidaSecundario() {
@@ -38,6 +42,8 @@ public class MonitorDisponibilidad implements Runnable {
 	public MonitorDisponibilidad() {
 		try {
 			this.conectar("localhost", 1);
+			this.ventana= new VentanaDisponibilidad();
+			this.ventana.setVisible(true);
 			Thread hilo = new Thread(this);
 			hilo.run();
 			this.escucharConexiones();
@@ -82,14 +88,16 @@ public class MonitorDisponibilidad implements Runnable {
 						String cadena = (String) object;
 						if (cadena.equals("PUM PUM")) {     //si lee pum pum entonces recibio heartbeat con exito y reinicio el timer
 							System.out.println(pre+"Recibió el objeto "+ cadena + " \t Reiniciando temporizador");
+							String horaActual = LocalTime.now().toString();
+							this.ventana.escribirLista1("["+horaActual.substring(0, 8)+"]"+ " Heartbeat");
 							tarea.cancel();
 							tarea = new HeartBeat();
 							timer.schedule(tarea, tiempoEspera);       //tarea que dice qwue si pasan tiempoEspera segundos, no se recibio nada, tonces esta caido
 						} else 
 							System.out.println("recibí basura");
 					} else if (object instanceof List){
-						this.clientes= (Queue<Cliente>) object;
-						System.out.println(pre+"Actualicé la lista de clientes en el monitor de disponibilidad "+ this.clientes.toString());
+						//this.clientes= (Queue<Cliente>) object;
+						//System.out.println(pre+"Actualicé la lista de clientes en el monitor de disponibilidad "+ this.clientes.toString());
 					}
 					
 					
@@ -154,9 +162,13 @@ public class MonitorDisponibilidad implements Runnable {
 			while (true) {
 				try {
 					socket = socketServidor.accept();
+					MonitorDisponibilidad.this.ventana.escribirLista2("["+LocalTime.now().toString().substring(0,8)+"]"+"Reactivando servidor principal");
 					System.out.println(pre+"Ha entrado una conexion al servidor");  //cada vez que entra una conexión representa que el servidor primario se volvió a abrir, so envío señal de cambiar de server
 					flujoSalidaSecundario.writeObject(777);
 					MonitorDisponibilidad.this.entroConexion(); //reactivo el heartbeat
+					MonitorDisponibilidad.this.ventana.escribirLista2("["+LocalTime.now().toString().substring(0,8)+"]"+"Reactivando heartbeats");
+					MonitorDisponibilidad.this.ventana.escribirLista2("["+LocalTime.now().toString().substring(0,8)+"]"+"Servidor principal reactivado");
+					System.out.println(pre+"Servidor principal reactivado");
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -170,12 +182,12 @@ public class MonitorDisponibilidad implements Runnable {
 		
 	}
 	
-	class escuchaDatosServer implements Runnable{
-
+	/*class escuchaDatosServer implements Runnable{
 		@Override
 		public void run() {
 			while (true) {
 				try {
+						MonitorDisponibilidad.this.ventana.escribirLista2("["+LocalTime.now()+"]"+"Escuchando a ver si cambia el servidor!!!");
 						System.out.println(pre+"Escuchando a ver si cambia el servidor!!!");
 						ObjectInputStream flujo = new ObjectInputStream(MonitorDisponibilidad.this.socketPrimario.getInputStream());  ////?????????????????? no tocar, por algun motivo no funciona con el input original y tuve que crear este xD
 						Object object =   flujo.readObject();
@@ -184,10 +196,12 @@ public class MonitorDisponibilidad implements Runnable {
 							int x = (int) object;
 							if (x==777) {
 								if (MonitorDisponibilidad.this.principalActivo) {
-									System.out.println("Abriendo server primario por primera vez");
+									MonitorDisponibilidad.this.ventana.escribirLista2("["+LocalTime.now()+"]"+"Abriendo server primario por primera vez");
+									System.out.println(pre+"Abriendo server primario por primera vez");
 								} else {
 									flujoSalidaSecundario.writeObject(777); //codigo de que volvió el primario
-									System.out.println("El servidor principal volvió a activarse luego de una caída");
+									MonitorDisponibilidad.this.ventana.escribirLista2("["+LocalTime.now()+"]"+"El servidor principal volvió a activarse luego de una caída");
+									System.out.println(pre+"El servidor principal volvió a activarse luego de una caída");
 								}
 								
 
@@ -200,7 +214,7 @@ public class MonitorDisponibilidad implements Runnable {
 	}
 		}
 		
-	}
+	} */
 	
 	class HeartBeat extends TimerTask {
         public HeartBeat() {
@@ -209,11 +223,16 @@ public class MonitorDisponibilidad implements Runnable {
 
         @Override
         public void run() {
-                System.err.println(pre + "Tiempo de espera excedido. No se recibió el objeto a tiempo.");
+        		MonitorDisponibilidad.this.ventana.escribirLista1("["+LocalTime.now().toString().substring(0,8)+"]"+"Error!");
+        		MonitorDisponibilidad.this.ventana.escribirLista2("["+LocalTime.now().toString().substring(0,8)+"]"+ " No se recibió el heartbeat a tiempo.");
+                System.err.println(pre + "Tiempo de espera excedido. No se recibió el heartbeat a tiempo.");
                 try {
+                	MonitorDisponibilidad.this.ventana.escribirLista2("["+LocalTime.now().toString().substring(0,8)+"]"+ " Enviando señal de activación al servidor secundario");
                 	System.out.println("Enviando señal de activación al servidor secundario");
 					flujoSalidaSecundario.writeObject(17); //codigo de falla de server
+					MonitorDisponibilidad.this.socketPrimario.close();
 					MonitorDisponibilidad.this.principalActivo=false; //seteo que el server principal no está activo
+					MonitorDisponibilidad.this.ventana.escribirLista2("["+LocalTime.now().toString().substring(0,8)+"]"+ " Servidor secundario activado.");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
