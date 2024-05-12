@@ -158,7 +158,7 @@ public class SistemaEmpleados extends Observable implements Runnable {
 
 
 	@Override
-	public void run() {
+	public synchronized void run() {
 		System.out.println(pre+"Ejecutando hilo de empleado");
 	//	while (SistemaEmpleados.this.flag) {
 		while (true) {
@@ -207,10 +207,12 @@ public class SistemaEmpleados extends Observable implements Runnable {
 							SistemaEmpleados.this.socket.close();
 							//SistemaEmpleados.this.socketSecundario.close();
 							Thread.sleep(100);  //un pequeño delay porque sino no le da tiempo a abrirse al servidor primario
+							this.flujoEntrada.close();
+							this.flujoSalida.close();
 							SistemaEmpleados.this.reconecto("localhost", 1);
 				            this.principalActivo=true;
 				           // System.out.println("Interrumpiendo hilo de escucha");
-				            Thread.currentThread().interrupt();
+				            //Thread.currentThread().interrupt();
 							return;
 						}
 						
@@ -233,7 +235,7 @@ public class SistemaEmpleados extends Observable implements Runnable {
 	public class EscuchaCambioServer implements Runnable { //un hilo simplemente para q escuche cuando se cambia el servidor
 
 		@Override
-		public void run() {
+		public synchronized void run() {
 			try {
 				
 				while(true) {

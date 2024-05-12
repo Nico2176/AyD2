@@ -216,13 +216,13 @@ public class VentanaPersonal extends JFrame implements Ivista {
     	Iterator<Cliente> iterador = lista.iterator();               
     	int i=0;
     	Toolkit.getDefaultToolkit().beep();
-        while (iterador.hasNext()) {
+        while (iterador.hasNext() && i<6) {
         	Cliente cliente = iterador.next();
         	this.labels[i].setText(cliente.toString());                 //los printeo en la ventana
         	i++;  
         }
         
-        for (int x = i+1 ; x < 6; x++) {
+        for (int x = i ; x < 6; x++) {
            this.labels[i].setText("");
         }
     }

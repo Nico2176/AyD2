@@ -208,7 +208,7 @@ public class VentanaMonitor extends JFrame implements Ivista{
             i++;  
         }
         
-        for (int x = i+1 ; x < N; x++) {
+        for (int x = i ; x < N; x++) {
            this.labels[i].setText("");
         }
     }

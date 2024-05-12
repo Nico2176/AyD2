@@ -36,6 +36,7 @@ public class SistemaMonitor extends Observable implements Runnable {
 		try {
 			int x=2176;
 			this.flujoSalida.writeObject(x); //codigo identificador del monitor (en el servidor, el socket que reciba este código será el del monitor)
+			this.flujoSalida.flush();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -69,6 +70,7 @@ public class SistemaMonitor extends Observable implements Runnable {
 		this.flujoSalida = new ObjectOutputStream(socket.getOutputStream());
         this.flujoEntrada = new ObjectInputStream(socket.getInputStream());
         this.flujoSalida.writeObject(2176);
+        this.flujoSalida.flush();
         this.flujoSalida.flush();
         this.iniciarHilo();
 	}
@@ -124,6 +126,8 @@ public class SistemaMonitor extends Observable implements Runnable {
 							SistemaMonitor.this.socket.close();
 							//SistemaEmpleados.this.socketSecundario.close();
 							Thread.sleep(100);  //un pequeño delay porque sino no le da tiempo a abrirse al servidor primario
+							this.flujoEntrada.close();
+							this.flujoSalida.close();
 							SistemaMonitor.this.reconecto("localhost", 1);
 				            this.principalActivo=true;
 				            System.out.println(pre+"Interrumpiendo hilo de escucha");
@@ -149,7 +153,7 @@ public class SistemaMonitor extends Observable implements Runnable {
 	public class EscuchaCambioServer implements Runnable { //un hilo simplemente para q escuche cuando se cambia el servidor
 
 		@Override
-		public void run() {
+		public synchronized void run() {
 			try {
 				while(true) {
 					System.out.println(pre+"Escuchando a ver si cambió el server");
