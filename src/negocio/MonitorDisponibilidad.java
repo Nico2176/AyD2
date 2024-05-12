@@ -15,6 +15,7 @@ import java.util.TimerTask;
 import javax.swing.JOptionPane;
 
 import modelo.Cliente;
+import modelo.Datos;
 import vista.VentanaDisponibilidad;
 
 public class MonitorDisponibilidad implements Runnable {
@@ -47,6 +48,8 @@ public class MonitorDisponibilidad implements Runnable {
 			Thread hilo = new Thread(this);
 			hilo.run();
 			this.escucharConexiones();
+			Thread hiloEscuchaSecundario = new Thread(new EscuchaSecundario(socketSecundario));
+			hiloEscuchaSecundario.start();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, "Error! Servidor no disponible" + e.getMessage());
 		}
@@ -96,8 +99,8 @@ public class MonitorDisponibilidad implements Runnable {
 						} else 
 							System.out.println("recibí basura");
 					} else if (object instanceof List){
-						//this.clientes= (Queue<Cliente>) object;
-						//System.out.println(pre+"Actualicé la lista de clientes en el monitor de disponibilidad "+ this.clientes.toString());
+						this.clientes= (Queue<Cliente>) object;
+						System.out.println(pre+"Actualicé la lista de clientes en el monitor de disponibilidad "+ this.clientes.toString());
 					}
 					
 					
@@ -147,7 +150,37 @@ public class MonitorDisponibilidad implements Runnable {
 		
 	}
 	
-	class EscuchaConexionServer implements Runnable{
+	class EscuchaSecundario implements Runnable{ //pequeña subclase que escuchará del servidor secundario solamente la lista de clientes para que cuando se reactive el primario puedan pasarse los datos almacenados
+		private Socket socket;
+
+		public EscuchaSecundario(Socket socket) {
+			super();
+			this.socket = socket;
+		}
+
+		@Override
+		public void run() {
+			while (true) {
+				try {
+					System.out.println(pre+"Escuchando actualizaciones de la queue del sv secundario");
+					ObjectInputStream flujo = new ObjectInputStream(socket.getInputStream());  ////?????????????????? no tocar, por algun motivo no funciona con el input original y tuve que crear este xD
+					Object object =   flujo.readObject();
+					if (object instanceof List){
+						MonitorDisponibilidad.this.clientes= (Queue<Cliente>) object;
+						System.out.println(pre+"Actualicé la lista de clientes en el monitor de disponibilidad "+ MonitorDisponibilidad.this.clientes.toString());
+					}
+					
+				} catch (IOException | ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}
+		}
+		
+	}
+	
+	class EscuchaConexionServer implements Runnable{ //pequeña subclase que va a escuchar cuando entra una nueva conexion, evento que ocurre solamente cuando el servidor principal vuelve a conectarse luego de una falla
 		private ServerSocket socketServidor;
 		private Socket socket;
 
@@ -169,6 +202,10 @@ public class MonitorDisponibilidad implements Runnable {
 					MonitorDisponibilidad.this.ventana.escribirLista2("["+LocalTime.now().toString().substring(0,8)+"]"+"Reactivando heartbeats");
 					MonitorDisponibilidad.this.ventana.escribirLista2("["+LocalTime.now().toString().substring(0,8)+"]"+"Servidor principal reactivado");
 					System.out.println(pre+"Servidor principal reactivado");
+					Datos datos = new Datos(MonitorDisponibilidad.this.clientes);
+					datos.setSiguiente(false);
+					MonitorDisponibilidad.this.flujoSalida.writeObject(datos);
+					System.out.println(pre+"Enviando "+ clientes.toString() +" Al servidor primario");
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

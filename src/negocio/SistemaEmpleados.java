@@ -66,7 +66,6 @@ public class SistemaEmpleados extends Observable implements Runnable {
 	}
 	
 	public void crearHilo() {
-		this.flag=true;
 		hilo = new Thread(this);
 		hilo.start();
 		hiloEscuchaSecundario = new Thread(new EscuchaCambioServer());
@@ -93,7 +92,12 @@ public class SistemaEmpleados extends Observable implements Runnable {
 		try {
 			System.out.println(pre+"DNI de cliente actual que estamos atendiendo: "+ clienteActual);
 			if (this.principalActivo) {
+				System.out.println("Notificando servidor principal para siguiente.");
 				this.flujoSalida.writeObject(new Datos(this.clientes,this.Box,true,clienteActual)); //queue, box que pidió al siguiente, y true para identificar que se está pidiendo a alguien y no es un nuevo ingreso en la Queue
+				this.flujoSalida.flush();
+				System.out.println("Notificado");
+				this.flujoSalidaSecundario.writeObject(new Datos(this.clientes,this.Box,true,clienteActual)); 
+				this.flujoSalidaSecundario.flush();
 			} else {
 				this.flujoSalidaSecundario.writeObject(new Datos(this.clientes,this.Box,true,clienteActual));
 			}
@@ -102,6 +106,7 @@ public class SistemaEmpleados extends Observable implements Runnable {
 			this.segundosDesocupado=(int)((finDesocupado.getTime() - this.comienzoDesocupado.getTime()) / 1000);
 			//this.flujoSalida.writeObject("Siguiente");
 		} catch (IOException e) {
+			e.printStackTrace();
 			System.out.println(pre+"Excepcion cuando hace siguiente "+ e.toString());
 		}
 	}
@@ -223,7 +228,6 @@ public class SistemaEmpleados extends Observable implements Runnable {
 		
 	}
 	
-	private boolean flag=true;
 
 	
 	public class EscuchaCambioServer implements Runnable { //un hilo simplemente para q escuche cuando se cambia el servidor

@@ -197,7 +197,7 @@ public class VentanaMonitor extends JFrame implements Ivista{
     }
     
     public void printeaLista(Object obj) {
-    	Toolkit.getDefaultToolkit().beep();
+    	//Toolkit.getDefaultToolkit().beep();
         Queue<Cliente> clientes = (Queue<Cliente>) obj;
         LinkedList<Cliente> lista = new LinkedList<Cliente> (clientes); //convierto la queue en una lista para poder acceder a los elementos 
         Iterator<Cliente> iterador = lista.iterator();               

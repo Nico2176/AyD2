@@ -34,7 +34,6 @@ public class ControladorMonitor implements ActionListener, Observer {
 			JOptionPane.showMessageDialog(null, "Servidor no disponible", "Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
 		}
-		SistemaMonitor.getInstancia().iniciarHilo();
 		try {
 			
 		} catch (Exception e) {
