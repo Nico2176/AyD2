@@ -6,6 +6,8 @@ import negocio.SistemaEmpleados;
 
 public class Cliente implements Serializable {
 	private String DNI;
+	private String afinidad;
+	private byte edad;
 	
 	
 	
@@ -13,6 +15,20 @@ public class Cliente implements Serializable {
 		super();
 		this.DNI = dNI;
 	}
+	
+	
+
+	public String getAfinidad() {
+		return afinidad;
+	}
+
+
+
+	public byte getEdad() {
+		return edad;
+	}
+
+
 
 	public String getDNI() {
 		return DNI;
