@@ -15,7 +15,7 @@ import java.util.TimerTask;
 import javax.swing.JOptionPane;
 
 import modelo.Cliente;
-import modelo.Datos;
+import modelo.Pedido;
 import vista.VentanaDisponibilidad;
 
 public class MonitorDisponibilidad implements Runnable {
@@ -202,7 +202,7 @@ public class MonitorDisponibilidad implements Runnable {
 					MonitorDisponibilidad.this.ventana.escribirLista2("["+LocalTime.now().toString().substring(0,8)+"]"+"Reactivando heartbeats");
 					MonitorDisponibilidad.this.ventana.escribirLista2("["+LocalTime.now().toString().substring(0,8)+"]"+"Servidor principal reactivado");
 					System.out.println(pre+"Servidor principal reactivado");
-					Datos datos = new Datos(MonitorDisponibilidad.this.clientes);
+					Pedido datos = new Pedido(MonitorDisponibilidad.this.clientes);
 					datos.setSiguiente(false);
 					MonitorDisponibilidad.this.flujoSalida.writeObject(datos);
 					System.out.println(pre+"Enviando "+ clientes.toString() +" Al servidor primario");

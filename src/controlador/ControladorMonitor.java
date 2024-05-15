@@ -12,7 +12,7 @@ import java.util.Queue;
 import javax.swing.JOptionPane;
 
 import modelo.Cliente;
-import modelo.Datos;
+import modelo.Pedido;
 import negocio.SistemaClientes;
 import vista.Ivista;
 import vista.VentanaMonitor;
@@ -52,8 +52,8 @@ public class ControladorMonitor implements ActionListener, Observer {
 		VentanaMonitor ventana = (VentanaMonitor) this.vista;
 		if (arg instanceof List)
 			ventana.printeaLista(arg);
-		else if (arg instanceof Datos) {
-			Datos datos = (Datos) arg;
+		else if (arg instanceof Pedido) {
+			Pedido datos = (Pedido) arg;
 			ventana.printLblBox((int) datos.getBox() );
 			ventana.printlblSiguiente((String) datos.getDNISig());
 		} 

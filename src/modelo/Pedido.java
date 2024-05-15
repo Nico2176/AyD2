@@ -3,7 +3,7 @@ package modelo;
 import java.io.Serializable;
 import java.util.Queue;
 
-public class Datos implements Serializable {
+public class Pedido implements Serializable {
 	private Queue<Cliente> clientes;
 	private int box;
 	private boolean siguiente=false;
@@ -31,7 +31,7 @@ public class Datos implements Serializable {
 
 	
 
-	public Datos(int box, String dNISig) {
+	public Pedido(int box, String dNISig) {
 		super();
 		this.box = box;
 		this.DNISig = dNISig;
@@ -46,7 +46,7 @@ public class Datos implements Serializable {
 
 	
 
-	public Datos(Queue<Cliente> clientes, int box, boolean siguiente, String DNISig) {
+	public Pedido(Queue<Cliente> clientes, int box, boolean siguiente, String DNISig) {
 		super();
 		this.clientes = clientes;
 		this.box = box;
@@ -56,7 +56,7 @@ public class Datos implements Serializable {
 	
 	
 	
-	public Datos(Queue<Cliente> clientes) {
+	public Pedido(Queue<Cliente> clientes) {
 		super();
 		this.clientes = clientes;
 	}

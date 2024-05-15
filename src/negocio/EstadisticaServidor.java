@@ -1,12 +1,12 @@
 package negocio;
 
-public class Estadisticas {
+public class EstadisticaServidor {
 	private int segundosTotales;
 	private int segundosAtendiendo;
 	private int segundosDesocupado;
 	private int clientesAtendidos;
 	
-	public Estadisticas() {
+	public EstadisticaServidor() {
 		this.segundosAtendiendo=0;
 		this.segundosTotales=0;
 		this.segundosDesocupado=0;

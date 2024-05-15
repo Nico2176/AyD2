@@ -15,8 +15,8 @@ import java.util.Observable;
 import java.util.Queue;
 
 import modelo.Cliente;
-import modelo.Datos;
-import modelo.DatosEstadisticos;
+import modelo.Pedido;
+import modelo.EstadisticaEmpleado;
 
 
 
@@ -33,7 +33,7 @@ public class Servidor extends Observable implements Runnable{
 	private int rol;
 	private String pre="[SERVER]";
 	private boolean activo=true;   //si no está activo solo recopila datos, pero no envía, en un principio seria el servidor secundario (redundancia activa) 
-	private Estadisticas estadisticas = new Estadisticas();
+	private EstadisticaServidor estadisticas = new EstadisticaServidor();
 	
 	public static Servidor getInstancia() {
         if (instancia == null) {
@@ -82,7 +82,7 @@ public class Servidor extends Observable implements Runnable{
 
 
 
-	public Estadisticas getEstadisticas() {
+	public EstadisticaServidor getEstadisticas() {
 		return estadisticas;
 	}
 
@@ -221,7 +221,7 @@ public class Servidor extends Observable implements Runnable{
 				ObjectOutputStream flujo = new ObjectOutputStream(aux.getOutputStream());
 				System.out.println(pre+"Enviando queue al socket de MONITOR de puerto "+ aux.getPort());
 				System.out.println(pre+"DNI que vamos a enviar al monitor: "+ DNISig);
-				Datos datos = new Datos(box,DNISig);
+				Pedido datos = new Pedido(box,DNISig);
                 flujo.writeObject(datos);
                 flujo.flush();
                 System.out.println(pre+" Enviamos " + datos.toString() + " a los monitores!!!");
@@ -266,9 +266,9 @@ public class Servidor extends Observable implements Runnable{
             		System.out.println(pre+"Escuchando...........");
                     Object object = flujoEntrada.readObject();
                     System.out.println(pre+"Recibi el objeto "+ object.toString());
-                    if (object instanceof Datos) {
+                    if (object instanceof Pedido) {
                     	System.out.println("El servidor recibió un objeto tipo Datos");
-                    	Datos datos = (Datos) object;
+                    	Pedido datos = (Pedido) object;
                     	if (datos.isSiguiente()) { // un empleado pidió para siguiente.  implica enviar a los monitores quién fue
                     		System.out.println(pre+"El server recibió DNI "+ datos.getDNISig() +" en una request para siguiente ");
                     		Servidor.this.getClientes().poll();
@@ -279,7 +279,7 @@ public class Servidor extends Observable implements Runnable{
 	                    		Servidor.this.enviarQueue();  
 	                    		Servidor.this.enviarBoxMonitores(datos.getBox(),datos.getDNISig());
                     		}
-                    	} else {     //Si entra una clase datos sin siguiente es que la recibio del monitor de disponibilidad para ser actualziada luego de una caida y resubida             
+                    	} else {     //Si entra una clase Pediodo sin siguiente es que la recibió del monitor de disponibilidad para ser actualziada luego de una caida y resubida             
                     		System.out.println("El servidor ha recibido la queue "+ datos.getClientes().toString() + " Del monitor de disponibilidad");
                     		Servidor.this.clientes= datos.getClientes();
                     		Servidor.this.enviarQueue();  
@@ -322,8 +322,8 @@ public class Servidor extends Observable implements Runnable{
                     	}
                     		
                     	
-                    } else if (object instanceof DatosEstadisticos) {
-                    	DatosEstadisticos datos = (DatosEstadisticos) object;
+                    } else if (object instanceof EstadisticaEmpleado) {
+                    	EstadisticaEmpleado datos = (EstadisticaEmpleado) object;
                     	Servidor.this.getEstadisticas().clienteAtendido(datos.getSegundosAtendiendo(), datos.getSegundosDesocupado());
                     	System.out.println(datos.toString());
                     	Servidor.this.setChanged();

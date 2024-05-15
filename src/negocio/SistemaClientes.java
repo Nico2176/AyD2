@@ -46,19 +46,21 @@ public class SistemaClientes implements Runnable{
 	
 	
 	public void conectar(String host, int puerto) throws Exception{ 
-        try {
-            this.socket = new Socket(host, puerto); 
+		this.socket = new Socket(host, puerto); 
+		this.flujoSalida = new ObjectOutputStream(socket.getOutputStream());
+        this.flujoEntrada = new ObjectInputStream(socket.getInputStream());
+        System.out.println(pre+"Cliente conectado con el servidor, puerto del socket: "+ this.socket.getLocalPort());
+        try {   
             this.socketSecundario = new Socket("localhost",2);
-            System.out.println(pre+"Cliente conectado con el servidor, puerto del socket: "+ this.socket.getLocalPort());
-            this.flujoSalida = new ObjectOutputStream(socket.getOutputStream());
-            this.flujoEntrada = new ObjectInputStream(socket.getInputStream());
             this.flujoSalidaSecundario = new ObjectOutputStream(socketSecundario.getOutputStream());
             this.flujoEntradaSecundario = new ObjectInputStream(socketSecundario.getInputStream());
             this.hilo = new Thread (this);
             hilo.start();
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            System.out.println("No hay servidor secundario");
         }
+        
+        
     }
 	
 	public void enviarDatos(String DNI) throws Exception{

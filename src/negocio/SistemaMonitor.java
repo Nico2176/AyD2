@@ -10,7 +10,7 @@ import java.util.Observable;
 import java.util.Queue;
 
 import modelo.Cliente;
-import modelo.Datos;
+import modelo.Pedido;
 
 public class SistemaMonitor extends Observable implements Runnable {
 	private Socket socket;
@@ -45,23 +45,27 @@ public class SistemaMonitor extends Observable implements Runnable {
 	
 	public void conectar(String host, int puerto) throws Exception { 
             this.socket = new Socket(host, puerto); 
-            this.socketSecundario = new Socket(host,2);
             System.out.println(pre+"Empleado conectado con el servidor, puerto del socket: "+ this.socket.getLocalPort());
             this.flujoSalida = new ObjectOutputStream(socket.getOutputStream());
             this.flujoEntrada = new ObjectInputStream(socket.getInputStream());
-            this.flujoSalidaSecundario = new ObjectOutputStream(socketSecundario.getOutputStream());
-            this.flujoEntradaSecundario = new ObjectInputStream(socketSecundario.getInputStream());
-            this.identificaMonitor(); //envio el codigo de identificacion de monitor al servidor para que le de el trato que le corresponde
-            
-            
+            try {
+            	this.socketSecundario = new Socket(host,2);
+	            this.flujoSalidaSecundario = new ObjectOutputStream(socketSecundario.getOutputStream());
+	            this.flujoEntradaSecundario = new ObjectInputStream(socketSecundario.getInputStream());
+            } catch (Exception e) {
+            	System.out.println("No hay servidor secundario");
+            }
+            this.identificaMonitor(); //envio el codigo de identificacion de monitor al servidor para que le de el trato que le corresponde 
             this.iniciarHilo(); //inicia los hilos de escucha para recibir informacion y recibir cambio de servidor
     }
 
 	public void iniciarHilo() {
 		this.hilo= new Thread(this);
 		this.hilo.start();
-		this.hiloCambioServidor = new Thread(new EscuchaCambioServer());
-        this.hiloCambioServidor.start();
+		if (this.socketSecundario!=null) {
+			this.hiloCambioServidor = new Thread(new EscuchaCambioServer());
+	        this.hiloCambioServidor.start();
+		}
 	}
 
 	public void reconecto(String host, int puerto) throws Exception{
@@ -92,9 +96,9 @@ public class SistemaMonitor extends Observable implements Runnable {
 						this.clientes= clientes;
 						this.setChanged();
 						notifyObservers(clientes);
-					} else if (object instanceof Datos) {
+					} else if (object instanceof Pedido) {
 						this.setChanged();
-						Datos datos = (Datos) object;
+						Pedido datos = (Pedido) object;
 						notifyObservers(datos);
 					}
 					
@@ -115,9 +119,9 @@ public class SistemaMonitor extends Observable implements Runnable {
 						this.clientes= clientes;
 						this.setChanged();
 						notifyObservers(clientes);
-					} else if (object instanceof Datos) {
+					} else if (object instanceof Pedido) {
 						this.setChanged();
-						Datos datos = (Datos) object;
+						Pedido datos = (Pedido) object;
 						notifyObservers(datos);
 					} else if (object instanceof Integer) {
 						int x = (int) object;

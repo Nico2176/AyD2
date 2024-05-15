@@ -7,7 +7,7 @@ import java.util.Observer;
 
 import javax.swing.JOptionPane;
 
-import negocio.Estadisticas;
+import negocio.EstadisticaServidor;
 import negocio.Servidor;
 import vista.Ivista;
 import vista.VentanaEstadisticas;
@@ -61,9 +61,9 @@ public class ControladorServer implements ActionListener, Observer {
 	@Override
 	public void update(Observable o, Object arg) {
 		VentanaServer ventana = (VentanaServer) this.vista;
-		if (arg instanceof Estadisticas) {
+		if (arg instanceof EstadisticaServidor) {
 			if (this.ventanaEstadisticas!=null) {
-				Estadisticas estadisticas = (Estadisticas) arg;
+				EstadisticaServidor estadisticas = (EstadisticaServidor) arg;
 				this.ventanaEstadisticas.actualizarEstadisticas(estadisticas.getClientesAtendidos(), estadisticas.getSegundosAtendiendo(), estadisticas.getSegundosDesocupado(), estadisticas.getSegundosTotales(), estadisticas.getPromedioTiempoAtencion(), estadisticas.getPromedioxHora());
 			}
 		} else {

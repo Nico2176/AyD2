@@ -16,8 +16,8 @@ import java.util.regex.Pattern;
 import controlador.ControladorCliente;
 import controlador.ControladorPersonal;
 import modelo.Cliente;
-import modelo.Datos;
-import modelo.DatosEstadisticos;
+import modelo.Pedido;
+import modelo.EstadisticaEmpleado;
 
 
 
@@ -31,6 +31,7 @@ public class SistemaEmpleados extends Observable implements Runnable {
 	private ObjectOutputStream flujoSalidaSecundario;
 	private ObjectInputStream flujoEntradaSecundario;
 	private boolean principalActivo = true;
+	private boolean secundarioActivo = false;
     private Thread hilo;
     private Thread hiloEscuchaSecundario;
     private Queue<Cliente> clientes;
@@ -65,11 +66,17 @@ public class SistemaEmpleados extends Observable implements Runnable {
 		return instancia;
 	}
 	
-	public void crearHilo() {
+	public void crearHilo() { 
+		//System.out.println("Socket secundario isconnected: "+ socketSecundario);
 		hilo = new Thread(this);
-		hilo.start();
-		hiloEscuchaSecundario = new Thread(new EscuchaCambioServer());
-		hiloEscuchaSecundario.start();
+		hilo.start();	
+		if (this.socketSecundario!=null) {
+			System.out.println("El socket secundario SÍ está coenctado. creando hilo");	
+			hiloEscuchaSecundario = new Thread(new EscuchaCambioServer());
+			hiloEscuchaSecundario.start();
+		} else {
+			System.out.println("El socket scundario NO está conectado");
+		}
 		
 		
 	}
@@ -93,13 +100,17 @@ public class SistemaEmpleados extends Observable implements Runnable {
 			System.out.println(pre+"DNI de cliente actual que estamos atendiendo: "+ clienteActual);
 			if (this.principalActivo) {
 				System.out.println("Notificando servidor principal para siguiente.");
-				this.flujoSalida.writeObject(new Datos(this.clientes,this.Box,true,clienteActual)); //queue, box que pidió al siguiente, y true para identificar que se está pidiendo a alguien y no es un nuevo ingreso en la Queue
+				this.flujoSalida.writeObject(new Pedido(this.clientes,this.Box,true,clienteActual)); //queue, box que pidió al siguiente, y true para identificar que se está pidiendo a alguien y no es un nuevo ingreso en la Queue
 				this.flujoSalida.flush();
 				System.out.println("Notificado");
-				this.flujoSalidaSecundario.writeObject(new Datos(this.clientes,this.Box,true,clienteActual)); 
-				this.flujoSalidaSecundario.flush();
+				if (this.secundarioActivo) {
+					this.flujoSalidaSecundario.writeObject(new Pedido(this.clientes,this.Box,true,clienteActual)); 
+					this.flujoSalidaSecundario.flush();
+				}
 			} else {
-				this.flujoSalidaSecundario.writeObject(new Datos(this.clientes,this.Box,true,clienteActual));
+				if (this.secundarioActivo) {
+					this.flujoSalidaSecundario.writeObject(new Pedido(this.clientes,this.Box,true,clienteActual));
+				}
 			}
 			comienzo = new java.util.Date(); //para comenzar a contar los segundos transcurridos 
 			java.util.Date finDesocupado = new java.util.Date();
@@ -117,7 +128,7 @@ public class SistemaEmpleados extends Observable implements Runnable {
 	public int finalizaTurno() {
 		java.util.Date fin = new java.util.Date();
 		try {
-			DatosEstadisticos datos = new DatosEstadisticos();
+			EstadisticaEmpleado datos = new EstadisticaEmpleado();
 			datos.setSegundosDesocupado(this.segundosDesocupado);
 			datos.setSegundosAtendiendo(((int)((fin.getTime() - this.comienzo.getTime()) / 1000)));
 			if (this.principalActivo) {
@@ -134,14 +145,21 @@ public class SistemaEmpleados extends Observable implements Runnable {
 	
 	public void conectar(String host, int puerto) throws Exception { 
             this.socket = new Socket(host, puerto); 
-            this.socketSecundario = new Socket(host,2);
+           
             System.out.println(pre+"Conectado con el servidor, puerto del socket: "+ this.socket.getLocalPort());
             this.flujoSalida = new ObjectOutputStream(socket.getOutputStream());
-            this.flujoEntrada = new ObjectInputStream(socket.getInputStream());
+            this.flujoEntrada = new ObjectInputStream(socket.getInputStream());    
             this.flujoSalida.writeObject(21);
-            this.flujoSalidaSecundario = new ObjectOutputStream(socketSecundario.getOutputStream());
-            this.flujoEntradaSecundario = new ObjectInputStream(socketSecundario.getInputStream());
-            this.flujoSalidaSecundario.writeObject(21);
+            
+            try {
+            	this.socketSecundario = new Socket(host,2);
+	            this.flujoSalidaSecundario = new ObjectOutputStream(socketSecundario.getOutputStream());
+	            this.flujoEntradaSecundario = new ObjectInputStream(socketSecundario.getInputStream());
+	            this.flujoSalidaSecundario.writeObject(21);
+	            this.secundarioActivo=true;
+            } catch (Exception e) {
+            	System.out.println("No hay servidor secundario");
+            }
             this.crearHilo();
         } 
 
