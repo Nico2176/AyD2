@@ -36,6 +36,8 @@ public class SistemaMonitor extends Observable implements Runnable {
 		try {
 			int x=2176;
 			this.flujoSalida.writeObject(x); //codigo identificador del monitor (en el servidor, el socket que reciba este código será el del monitor)
+			this.flujoSalidaSecundario.writeObject(x);
+			this.flujoSalida.flush();
 			this.flujoSalida.flush();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -79,6 +81,8 @@ public class SistemaMonitor extends Observable implements Runnable {
         this.iniciarHilo();
 	}
 
+	
+	
 	@Override
 	public synchronized void run() {
 		System.out.println(pre+"Ejecutando hilo del monitor");
@@ -87,11 +91,12 @@ public class SistemaMonitor extends Observable implements Runnable {
 			if (this.principalActivo){
 				try {
 					System.out.println(pre+"monitor escuchando del sv primario........");
-					ObjectInputStream flujo = new ObjectInputStream(this.socket.getInputStream());  ////?????????????????? no tocar, por algun motivo no funciona con el input original y tuve que crear este xD
-					Object object =   flujo.readObject();
+						ObjectInputStream flujo = new ObjectInputStream(this.socket.getInputStream());  ////?????????????????? no tocar, por algun motivo no funciona con el input original y tuve que crear este xD
+						Object object =   flujo.readObject();
+					
 					System.out.println(pre+"monitor recibió el objeto "+ object.toString());
 					if (object instanceof List) { //recibió la queue de clientes actualizada
-						Toolkit.getDefaultToolkit().beep();
+					//	Toolkit.getDefaultToolkit().beep();
 						Queue<Cliente> clientes = (Queue<Cliente>) object;
 						this.clientes= clientes;
 						this.setChanged();
@@ -105,6 +110,7 @@ public class SistemaMonitor extends Observable implements Runnable {
 					
 					
 				} catch (ClassNotFoundException | IOException e) {
+					e.printStackTrace();
 					System.out.println(pre+"Excepcion recibiendo la queue "+ e.toString());
 				}
 			} else {    //principal no activo
@@ -127,22 +133,27 @@ public class SistemaMonitor extends Observable implements Runnable {
 						int x = (int) object;
 						if (x==777) {
 							System.out.println(pre+"Volvió el primario, cambiando nuevamente");
-							SistemaMonitor.this.socket.close();
-							//SistemaEmpleados.this.socketSecundario.close();
-							Thread.sleep(100);  //un pequeño delay porque sino no le da tiempo a abrirse al servidor primario
+							
+							
+							this.socket.close();
 							this.flujoEntrada.close();
 							this.flujoSalida.close();
+							//SistemaEmpleados.this.socketSecundario.close();
+							Thread.sleep(500);  //un pequeño delay porque sino no le da tiempo a abrirse al servidor primario
+							
 							SistemaMonitor.this.reconecto("localhost", 1);
 				            this.principalActivo=true;
 				            System.out.println(pre+"Interrumpiendo hilo de escucha");
-				            Thread.currentThread().interrupt();
+				          //  Thread.currentThread().interrupt();
 							return;
 						}
 					}
 					
 					
 					
+					
 				} catch (Exception e) {
+					e.printStackTrace();
 					System.out.println(pre+"Excepcion recibiendo la queue "+ e.toString());
 				}
 				
