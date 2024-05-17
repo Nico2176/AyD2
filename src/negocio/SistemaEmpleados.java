@@ -224,9 +224,10 @@ public class SistemaEmpleados extends Observable implements Runnable {
 							System.out.println(pre+"Volvió el primario, cambiando nuevamente");
 							SistemaEmpleados.this.socket.close();
 							//SistemaEmpleados.this.socketSecundario.close();
-							Thread.sleep(100);  //un pequeño delay porque sino no le da tiempo a abrirse al servidor primario
+							
 							this.flujoEntrada.close();
 							this.flujoSalida.close();
+							Thread.sleep(200);  //un pequeño delay porque sino no le da tiempo a abrirse al servidor primario
 							SistemaEmpleados.this.reconecto("localhost", 1);
 				            this.principalActivo=true;
 				           // System.out.println("Interrumpiendo hilo de escucha");
