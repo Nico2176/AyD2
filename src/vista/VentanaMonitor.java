@@ -11,11 +11,13 @@ import java.awt.Font;
 import java.awt.SystemColor;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 
 import modelo.Cliente;
+import modelo.Cola;
 
 import javax.swing.JScrollPane;
 
@@ -196,10 +198,26 @@ public class VentanaMonitor extends JFrame implements Ivista{
     	this.lblSiguiente.setText("SIGUIENTE: "+ DNI);
     }
     
-    public void printeaLista(Object obj) {
+   /*  public void printeaLista(Object obj) {
     	//Toolkit.getDefaultToolkit().beep();
         Queue<Cliente> clientes = (Queue<Cliente>) obj;
         LinkedList<Cliente> lista = new LinkedList<Cliente> (clientes); //convierto la queue en una lista para poder acceder a los elementos 
+        Iterator<Cliente> iterador = lista.iterator();               
+        int i=0;
+        while (iterador.hasNext()) {
+            Cliente cliente = iterador.next();
+            this.labels[i].setText(cliente.toString());                 //los printeo en la ventana
+            i++;  
+        }
+        
+        for (int x = i ; x < N; x++) {
+           this.labels[i].setText("");
+        }
+    } */
+    
+    
+    public void printeaLista(Cola cola) {
+    	ArrayList<Cliente> lista = cola.getLista();
         Iterator<Cliente> iterador = lista.iterator();               
         int i=0;
         while (iterador.hasNext()) {

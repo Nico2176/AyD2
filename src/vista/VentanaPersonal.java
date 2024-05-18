@@ -9,6 +9,7 @@ import javax.swing.JButton;
 import java.awt.SystemColor;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -19,6 +20,7 @@ import java.awt.FlowLayout;
 import javax.swing.border.LineBorder;
 
 import modelo.Cliente;
+import modelo.Cola;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -210,9 +212,26 @@ public class VentanaPersonal extends JFrame implements Ivista {
     }
 
     
-    public void printeaLista(Object obj) {
+  /*  public void printeaLista(Object obj) {
     	Queue<Cliente> clientes = (Queue<Cliente>) obj;
     	LinkedList<Cliente> lista = new LinkedList<Cliente> (clientes); //convierto la queue en una lista para poder acceder a los elementos 
+    	Iterator<Cliente> iterador = lista.iterator();               
+    	int i=0;
+    	Toolkit.getDefaultToolkit().beep();
+        while (iterador.hasNext() && i<6) {
+        	Cliente cliente = iterador.next();
+        	this.labels[i].setText(cliente.toString());                 //los printeo en la ventana
+        	i++;  
+        }
+        
+        for (int x = i ; x < 6; x++) {
+           this.labels[i].setText("");
+        }
+    } */
+    
+    
+    public void printeaLista(Cola cola) {
+    	ArrayList<Cliente> lista = cola.getLista();
     	Iterator<Cliente> iterador = lista.iterator();               
     	int i=0;
     	Toolkit.getDefaultToolkit().beep();

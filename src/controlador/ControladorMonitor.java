@@ -12,6 +12,7 @@ import java.util.Queue;
 import javax.swing.JOptionPane;
 
 import modelo.Cliente;
+import modelo.Cola;
 import modelo.Pedido;
 import negocio.SistemaClientes;
 import vista.Ivista;
@@ -50,13 +51,17 @@ public class ControladorMonitor implements ActionListener, Observer {
 	@Override
 	public void update(Observable o, Object arg) {
 		VentanaMonitor ventana = (VentanaMonitor) this.vista;
-		if (arg instanceof List)
-			ventana.printeaLista(arg);
-		else if (arg instanceof Pedido) {
+		//if (arg instanceof List)
+			//ventana.printeaLista(arg);
+		if (arg instanceof Cola) {
+			ventana.printeaLista((Cola) arg);
+		} else if (arg instanceof Pedido) {
 			Pedido datos = (Pedido) arg;
 			ventana.printLblBox((int) datos.getBox() );
 			ventana.printlblSiguiente((String) datos.getDNISig());
 		} 
+		
+		
 		
 	}
 	

@@ -1,10 +1,11 @@
 package modelo;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Queue;
 
 public class Pedido implements Serializable {
-	private Queue<Cliente> clientes;
+	private ArrayList<Cliente> clientes;
 	private int box;
 	private boolean siguiente=false;
 	private String DNISig;
@@ -46,7 +47,7 @@ public class Pedido implements Serializable {
 
 	
 
-	public Pedido(Queue<Cliente> clientes, int box, boolean siguiente, String DNISig) {
+	public Pedido(ArrayList<Cliente> clientes, int box, boolean siguiente, String DNISig) {
 		super();
 		this.clientes = clientes;
 		this.box = box;
@@ -56,17 +57,17 @@ public class Pedido implements Serializable {
 	
 	
 	
-	public Pedido(Queue<Cliente> clientes) {
+	public Pedido(ArrayList<Cliente> clientes) {
 		super();
 		this.clientes = clientes;
 	}
 
 
 
-	public Queue<Cliente> getClientes() {
+	public ArrayList<Cliente> getClientes() {
 		return clientes;
 	}
-	public void setClientes(Queue<Cliente> clientes) {
+	public void setClientes(ArrayList<Cliente> clientes) {
 		this.clientes = clientes;
 	}
 	public int getBox() {

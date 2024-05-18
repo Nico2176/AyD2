@@ -1,6 +1,8 @@
 package negocio;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
@@ -15,8 +17,10 @@ import java.util.Observable;
 import java.util.Queue;
 
 import modelo.Cliente;
+import modelo.Cola;
 import modelo.Pedido;
 import modelo.EstadisticaEmpleado;
+import modelo.IEstrategia;
 
 
 
@@ -31,16 +35,18 @@ public class Servidor extends Observable implements Runnable{
 	private ArrayList<Socket> monitores = new ArrayList<Socket>();
 	private static int boxes=0;
 	private int rol;
+	private int criterio=1;  //0 para orden de llegada, 1 para afinidad y 2 para edades. luego hacer que sea un archivo config.txt y que lo obtenga de ahi
+	
+	private Cola cola = new Cola();
 	private String pre="[SERVER]";
 	private boolean activo=true;   //si no está activo solo recopila datos, pero no envía, en un principio seria el servidor secundario (redundancia activa) 
 	private EstadisticaServidor estadisticas = new EstadisticaServidor();
+	private IEstrategia estrategia;
 	
-	public static Servidor getInstancia() {
-        if (instancia == null) {
-            instancia = new Servidor();
-        }
-        return instancia;
-    }
+	//ICola strategy = new StrategyAfinidad o new StrategyEtario o new StrategyDefecto
+	//cada una de esas clases que heredará de la interfaz strategy tendrá su propio metodo de resolución para la queue
+	//la interfaz (y por consecuente las strategies) tendrán un método "agregar(ArrayList<Cliente> cola)" donde se le enviará la queue actual que tiene el servidor y se modificará según corresponda
+	
 	
 	
 	
@@ -136,6 +142,14 @@ public class Servidor extends Observable implements Runnable{
 		}
 		Thread hilo = new Thread(this);
         hilo.start();
+        
+       if (this.criterio==0)
+    	   this.estrategia= new EstrategiaDefault();
+       else if (this.criterio==1)
+    	   this.estrategia= new EstrategiaAfinidad();
+       else if (this.criterio==2)
+    	   this.estrategia = new EstrategiaEdad();
+       
 	}
 	
 	public void enviarQueue() {        //este metodo envia a todos los sockets conectados la queue de clientes
@@ -145,7 +159,8 @@ public class Servidor extends Observable implements Runnable{
 			try {
 				ObjectOutputStream flujo = new ObjectOutputStream(aux.getOutputStream());
 				System.out.println(pre+"Enviando queue al socket de puerto "+ aux.getPort());
-                flujo.writeObject(this.clientes);
+				flujo.writeObject(this.cola);
+              //  flujo.writeObject(this.clientes);
                 flujo.flush();
 			} catch (IOException e) {
 				System.out.println(pre+"Excepcion enviando queues: "+ e.getMessage());
@@ -234,12 +249,41 @@ public class Servidor extends Observable implements Runnable{
 	private void enviarQueueMonitorDisponibilidad(Socket socket) {
 		try {
 			ObjectOutputStream flujo = new ObjectOutputStream(socket.getOutputStream());
-			flujo.writeObject(this.clientes);
+			flujo.writeObject(this.cola);
+			//flujo.writeObject(this.clientes);
 			flujo.flush();
 		} catch (IOException e) {
 			System.out.println(pre+"Exception enviando el box actual "+ e.toString());
 		}
 	}
+	
+	private Cliente buscaCliente(Cliente cliente) {
+	        String filePath = "db.txt";
+	        String DNIaux = "";
+	        String[] partes=null;
+	        System.out.println(pre+"Entramos a buscar el cliente en el archivo");
+	        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+	            String linea;
+	            while ((linea = br.readLine()) != null && !DNIaux.equals(cliente.getDNI())) {
+	            		partes = linea.split("\\|"); // Dividir la línea en partes utilizando el carácter '|'
+	                    DNIaux = partes[0]; // Obtener los datos de cada parte       
+	                    System.out.println(pre+"Analizando DNI "+ DNIaux);
+	            } 
+	        if (DNIaux.equals(cliente.getDNI())) { //si lo encontró entonces devuelve el cliente con todos sus datos
+	        	cliente.setAfinidad(partes[1]);
+	        	cliente.setEdad(Byte.parseByte(partes[2]));
+	        	System.out.println("Cliente cargado con datos "+ cliente.getAfinidad() + cliente.getEdad());
+	        } 
+	        System.out.println(pre+"Linea: "+ linea);
+            return cliente; //retorna cliente, si lo encontró entonces tendrá los datos que le corresponden cargados en el objeto. si no lo encontró, es decir que es uno nuevo, solo tendrá el DNI
+  
+	        } catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+	}
+	
+
 
 	
 	private class Escuchar implements Runnable { //seria el hilo de cada socket. puse la clase aca para q esté mas a mano y ademas pueda acceder facilmente a los atributos de la clase contenedora
@@ -271,17 +315,19 @@ public class Servidor extends Observable implements Runnable{
                     	Pedido datos = (Pedido) object;
                     	if (datos.isSiguiente()) { // un empleado pidió para siguiente.  implica enviar a los monitores quién fue
                     		System.out.println(pre+"El server recibió DNI "+ datos.getDNISig() +" en una request para siguiente ");
-                    		Servidor.this.getClientes().poll();
-                    		//if (Servidor.this.rol==2) {
-                    		//	Servidor.this.enviarQueueMonitorDisponibilidad(Servidor.this.socketDisponibilidad);
-                    	//	}
+                    		Servidor.this.cola.removeAtendido(Servidor.this.buscaCliente(Servidor.this.buscaCliente(new Cliente(datos.getDNISig())))); //remueve de las listas con las que trabaja
+                    		//Servidor.this.getClientes().poll();
+                    		if (Servidor.this.rol==2) {
+                    			Servidor.this.enviarQueueMonitorDisponibilidad(Servidor.this.socketDisponibilidad);
+                    		}
                     		if (Servidor.this.isActivo()) {
 	                    		Servidor.this.enviarQueue();  
 	                    		Servidor.this.enviarBoxMonitores(datos.getBox(),datos.getDNISig());
                     		}
                     	} else {     //Si entra una clase Pediodo sin siguiente es que la recibió del monitor de disponibilidad para ser actualziada luego de una caida y resubida             
                     		System.out.println("El servidor ha recibido la queue "+ datos.getClientes().toString() + " Del monitor de disponibilidad");
-                    		Servidor.this.clientes= datos.getClientes();
+                    		Servidor.this.cola.setLista(datos.getClientes());
+                    		//Servidor.this.clientes= datos.getClientes();
                     		Servidor.this.enviarQueue();  
                     	}
                     	
@@ -289,6 +335,8 @@ public class Servidor extends Observable implements Runnable{
                     	Cliente cliente = (Cliente) object;
                     	System.out.println(pre+"El servidor recibió el DNI "+ cliente.getDNI());
                 		Servidor.this.getClientes().add(cliente); //agrego al cliente a una coleccion de clientes
+                		Servidor.this.estrategia.agregar(cola, Servidor.this.buscaCliente(cliente));    
+                		System.out.println(pre+"Cliente: "+ cliente);
                 		if (Servidor.this.isActivo()) {
                 			Servidor.this.enviarQueue(); //enviar la queue actualziada a todos los empleados
                 		}

@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import controlador.ControladorCliente;
 import controlador.ControladorPersonal;
 import modelo.Cliente;
+import modelo.Cola;
 import modelo.Pedido;
 import modelo.EstadisticaEmpleado;
 
@@ -32,9 +33,10 @@ public class SistemaEmpleados extends Observable implements Runnable {
 	private ObjectInputStream flujoEntradaSecundario;
 	private boolean principalActivo = true;
 	private boolean secundarioActivo = false;
+	private Cola cola;
     private Thread hilo;
     private Thread hiloEscuchaSecundario;
-    private Queue<Cliente> clientes;
+    private ArrayList<Cliente> clientes;
     private String clienteActual="";
     private int Box;
     private String pre="[EMPLEADO]";
@@ -88,7 +90,8 @@ public class SistemaEmpleados extends Observable implements Runnable {
 		
 			
 		try {
-			clienteActual = this.clientes.poll().getDNI();	
+			clienteActual = this.cola.getLista().remove(0).getDNI();
+			//clienteActual = this.clientes.poll().getDNI();	
 		} catch (Exception e) {
 			throw new Exception(pre+"No hay clientes en la Queue");
 			
@@ -184,36 +187,46 @@ public class SistemaEmpleados extends Observable implements Runnable {
 				if (this.principalActivo) {
 					System.out.println(pre+"Escuchando al servidor principal........");
 					//Thread.sleep(300);
-					ObjectInputStream flujo = new ObjectInputStream(this.socket.getInputStream());  ////?????????????????? no tocar, por algun motivo no funciona con el input original y tuve que crear este xD
+					ObjectInputStream flujo = new ObjectInputStream(this.socket.getInputStream());  
 					Object object =   flujo.readObject();
 					
 					System.out.println(pre+"Recibió el objeto "+ object.toString());
-					if (object instanceof List) { //recibió la queue de clientes actualizada
+					/* if (object instanceof List) { //recibió la queue de clientes actualizada
 						Queue<Cliente> clientes = (Queue<Cliente>) object;
 						this.clientes= clientes;
 						this.setChanged();
 						notifyObservers(clientes);
 						//ControladorPersonal.getInstancia().printeaLista(clientes);
 						//actualizar ventana del empleado con la queue
-					} else if (object instanceof Integer) {
+					} else */if (object instanceof Integer) {
 						this.setChanged();
 						int box = (int) object;
 						notifyObservers(box);
+					} else if (object instanceof Cola) {
+						this.cola = (Cola) object;
+						this.setChanged();
+						notifyObservers((Cola) object);
 					}
 				} else { //si el principal no ta activo, recibe datos del secundario xd
 					System.out.println(pre+"Escuchando al servidor secundario........");
 					//ObjectInputStream flujoS = flujoEntradaOrdenTres;
-					ObjectInputStream flujoS = new ObjectInputStream(this.socketSecundario.getInputStream());  ////?????????????????? no tocar, por algun motivo no funciona con el input original y tuve que crear este xD
+					ObjectInputStream flujoS = new ObjectInputStream(this.socketSecundario.getInputStream());  
 					Object object =   flujoS.readObject();
 					System.out.println(pre+"Recibió el objeto del sv secundario"+ object.toString());
 					//flujoS=new ObjectInputStream(this.socketSecundario.getInputStream());  //esta linea la voy a dejar comentada porque estuve horas buscando un error y era esta linea aca nonsense, la odio ahre
-					if (object instanceof List) { //recibió la queue de clientes actualizada
+					/*if (object instanceof List) { //recibió la queue de clientes actualizada
 						Queue<Cliente> clientes = (Queue<Cliente>) object;
 						this.clientes= clientes;
 						this.setChanged();
 						notifyObservers(clientes);
 						//ControladorPersonal.getInstancia().printeaLista(clientes);
 						//actualizar ventana del empleado con la queue
+					} else */
+					
+					if (object instanceof Cola) {
+						this.cola = (Cola) object;
+						this.setChanged();
+						notifyObservers((Cola) object);
 					} else if (object instanceof Integer) {
 						int x = (int) object;
 						if (x!=777) {
@@ -233,7 +246,7 @@ public class SistemaEmpleados extends Observable implements Runnable {
 				           // System.out.println("Interrumpiendo hilo de escucha");
 				            //Thread.currentThread().interrupt();
 							return;
-						}
+						} 
 						
 					}
 				

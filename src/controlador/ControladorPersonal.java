@@ -12,6 +12,7 @@ import java.util.Random;
 import javax.swing.JOptionPane;
 
 import modelo.Cliente;
+import modelo.Cola;
 import negocio.SistemaEmpleados;
 import vista.Ivista;
 import vista.VentanaPersonal;
@@ -71,13 +72,20 @@ public class ControladorPersonal implements ActionListener, Observer{
 	@Override
 	public void update(Observable o, Object arg) {
 		VentanaPersonal ventana = (VentanaPersonal) this.vista;
-		if (arg instanceof List) {
+		
+		
+		/* if (arg instanceof List) {
 			ventana.printeaLista(arg);
+			ventana.actualizaSiguiente(SistemaEmpleados.getInstancia().getClienteActual());
+		} */ if (arg instanceof Cola) {
+			ventana.printeaLista((Cola) arg);
 			ventana.actualizaSiguiente(SistemaEmpleados.getInstancia().getClienteActual());
 		} else if (arg instanceof Integer) {
 			SistemaEmpleados.getInstancia().setBox((int) arg);
 			ventana.setBox((int) arg);
 		}
+		
+		
 		/* Datos datos = (Datos) arg;
 		ventana.printeaLista(datos.getClientes());
 		System.out.println("El controlador recibio el objeto "+ arg +" mediente patrón observer");

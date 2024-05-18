@@ -10,6 +10,7 @@ import java.util.Observable;
 import java.util.Queue;
 
 import modelo.Cliente;
+import modelo.Cola;
 import modelo.Pedido;
 
 public class SistemaMonitor extends Observable implements Runnable {
@@ -25,6 +26,7 @@ public class SistemaMonitor extends Observable implements Runnable {
 	private Thread hiloCambioServidor;
 	private boolean principalActivo = true;
 	private String pre = "[PANTALLA]";
+	private boolean secundarioActivo = true;
 	
 	public static SistemaMonitor getInstancia() {
 		if (instancia == null)
@@ -36,7 +38,8 @@ public class SistemaMonitor extends Observable implements Runnable {
 		try {
 			int x=2176;
 			this.flujoSalida.writeObject(x); //codigo identificador del monitor (en el servidor, el socket que reciba este código será el del monitor)
-			this.flujoSalidaSecundario.writeObject(x);
+			if (this.secundarioActivo)
+				this.flujoSalidaSecundario.writeObject(x);
 			this.flujoSalida.flush();
 			this.flujoSalida.flush();
 		} catch (IOException e) {
@@ -46,8 +49,9 @@ public class SistemaMonitor extends Observable implements Runnable {
 	}
 	
 	public void conectar(String host, int puerto) throws Exception { 
+
             this.socket = new Socket(host, puerto); 
-            System.out.println(pre+"Empleado conectado con el servidor, puerto del socket: "+ this.socket.getLocalPort());
+            System.out.println(pre+"Pantalla conectada con el servidor, puerto del socket: "+ this.socket.getLocalPort());
             this.flujoSalida = new ObjectOutputStream(socket.getOutputStream());
             this.flujoEntrada = new ObjectInputStream(socket.getInputStream());
             try {
@@ -55,10 +59,12 @@ public class SistemaMonitor extends Observable implements Runnable {
 	            this.flujoSalidaSecundario = new ObjectOutputStream(socketSecundario.getOutputStream());
 	            this.flujoEntradaSecundario = new ObjectInputStream(socketSecundario.getInputStream());
             } catch (Exception e) {
+            	this.secundarioActivo=false;
             	System.out.println("No hay servidor secundario");
             }
             this.identificaMonitor(); //envio el codigo de identificacion de monitor al servidor para que le de el trato que le corresponde 
             this.iniciarHilo(); //inicia los hilos de escucha para recibir informacion y recibir cambio de servidor
+	
     }
 
 	public void iniciarHilo() {
@@ -105,6 +111,10 @@ public class SistemaMonitor extends Observable implements Runnable {
 						this.setChanged();
 						Pedido datos = (Pedido) object;
 						notifyObservers(datos);
+					} else if (object instanceof Cola) {
+						this.setChanged();
+						notifyObservers((Cola) object);
+						
 					}
 					
 					
@@ -147,6 +157,10 @@ public class SistemaMonitor extends Observable implements Runnable {
 				          //  Thread.currentThread().interrupt();
 							return;
 						}
+					} else if (object instanceof Cola) {
+						this.setChanged();
+						notifyObservers((Cola) object);
+						
 					}
 					
 					

@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -29,7 +30,8 @@ public class MonitorDisponibilidad implements Runnable {
 	private ObjectInputStream flujoEntradaSecundario;
 	private String pre="[MONITOR]";
 	private LocalTime horaActual;
-	private Queue<Cliente> clientes = new LinkedList<>();
+	private ArrayList<Cliente> clientes = new ArrayList<>();
+	//private Queue<Cliente> clientes = new LinkedList<>();
 	private boolean principalActivo = true;
 	private VentanaDisponibilidad ventana;  //despues si anda bien lo abstraemos mas con la interfaz y otras herramientas
 	
@@ -99,7 +101,7 @@ public class MonitorDisponibilidad implements Runnable {
 						} else 
 							System.out.println("recibí basura");
 					} else if (object instanceof List){
-						this.clientes= (Queue<Cliente>) object;
+						this.clientes= (ArrayList<Cliente>) object;
 						System.out.println(pre+"Actualicé la lista de clientes en el monitor de disponibilidad "+ this.clientes.toString());
 					}
 					
@@ -163,10 +165,10 @@ public class MonitorDisponibilidad implements Runnable {
 			while (true) {
 				try {
 					System.out.println(pre+"Escuchando actualizaciones de la queue del sv secundario");
-					ObjectInputStream flujo = new ObjectInputStream(socket.getInputStream());  ////?????????????????? no tocar, por algun motivo no funciona con el input original y tuve que crear este xD
+					ObjectInputStream flujo = new ObjectInputStream(socket.getInputStream());  
 					Object object =   flujo.readObject();
 					if (object instanceof List){
-						MonitorDisponibilidad.this.clientes= (Queue<Cliente>) object;
+						MonitorDisponibilidad.this.clientes= (ArrayList<Cliente>) object;
 						System.out.println(pre+"Actualicé la lista de clientes en el monitor de disponibilidad "+ MonitorDisponibilidad.this.clientes.toString());
 					}
 					
