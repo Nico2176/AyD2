@@ -376,6 +376,9 @@ public class Servidor extends Observable implements Runnable{
                     	System.out.println(datos.toString());
                     	Servidor.this.setChanged();
                     	Servidor.this.notifyObservers(Servidor.this.getEstadisticas());
+                    } else if (object instanceof Cola) {
+                    	Servidor.this.cola = (Cola) object;
+                    	Servidor.this.enviarQueue(); 
                     }
                     
                    /* if (object instanceof String) { 

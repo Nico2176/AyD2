@@ -16,6 +16,7 @@ import java.util.TimerTask;
 import javax.swing.JOptionPane;
 
 import modelo.Cliente;
+import modelo.Cola;
 import modelo.Pedido;
 import vista.VentanaDisponibilidad;
 
@@ -31,6 +32,7 @@ public class MonitorDisponibilidad implements Runnable {
 	private String pre="[MONITOR]";
 	private LocalTime horaActual;
 	private ArrayList<Cliente> clientes = new ArrayList<>();
+	private Cola cola;
 	//private Queue<Cliente> clientes = new LinkedList<>();
 	private boolean principalActivo = true;
 	private VentanaDisponibilidad ventana;  //despues si anda bien lo abstraemos mas con la interfaz y otras herramientas
@@ -167,8 +169,9 @@ public class MonitorDisponibilidad implements Runnable {
 					System.out.println(pre+"Escuchando actualizaciones de la queue del sv secundario");
 					ObjectInputStream flujo = new ObjectInputStream(socket.getInputStream());  
 					Object object =   flujo.readObject();
-					if (object instanceof List){
-						MonitorDisponibilidad.this.clientes= (ArrayList<Cliente>) object;
+					if (object instanceof Cola){
+						MonitorDisponibilidad.this.cola = (Cola) object;
+					//	MonitorDisponibilidad.this.clientes= (ArrayList<Cliente>) object;
 						System.out.println(pre+"Actualicé la lista de clientes en el monitor de disponibilidad "+ MonitorDisponibilidad.this.clientes.toString());
 					}
 					
@@ -204,9 +207,11 @@ public class MonitorDisponibilidad implements Runnable {
 					MonitorDisponibilidad.this.ventana.escribirLista2("["+LocalTime.now().toString().substring(0,8)+"]"+"Reactivando heartbeats");
 					MonitorDisponibilidad.this.ventana.escribirLista2("["+LocalTime.now().toString().substring(0,8)+"]"+"Servidor principal reactivado");
 					System.out.println(pre+"Servidor principal reactivado");
-					Pedido datos = new Pedido(MonitorDisponibilidad.this.clientes);
-					datos.setSiguiente(false);
-					MonitorDisponibilidad.this.flujoSalida.writeObject(datos);
+					//Pedido datos = new Pedido(MonitorDisponibilidad.this.cola.getLista());
+				//	Pedido datos = new Pedido(MonitorDisponibilidad.this.clientes);
+					//datos.setSiguiente(false);
+					//MonitorDisponibilidad.this.flujoSalida.writeObject(datos);
+					MonitorDisponibilidad.this.flujoSalida.writeObject(MonitorDisponibilidad.this.cola);
 					System.out.println(pre+"Enviando "+ clientes.toString() +" Al servidor primario");
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
