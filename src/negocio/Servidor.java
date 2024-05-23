@@ -10,6 +10,8 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -28,6 +30,7 @@ import negocio.Strategies.EstrategiaDefault;
 import negocio.Strategies.EstrategiaEdad;
 import negocio.Strategies.IEstrategia;
 import modelo.EstadisticaEmpleado;
+import modelo.Interaccion;
 
 
 
@@ -358,7 +361,15 @@ public class Servidor extends Observable implements Runnable{
 	}
 	
 
+	private Interaccion interaccion(int x, String DNI) {
+		 LocalDateTime fechaHoraActual = LocalDateTime.now();
+	     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+	     String fechaHoraFormateada = fechaHoraActual.format(formatter);
+	     
+	     return (x==1)?new Interaccion(fechaHoraFormateada,DNI,"REGISTRO"):new Interaccion(fechaHoraFormateada,DNI,"ATENCION");
 
+	}
+	
 	
 	private class Escuchar implements Runnable { //seria el hilo de cada socket. puse la clase aca para q esté mas a mano y ademas pueda acceder facilmente a los atributos de la clase contenedora
         private Socket socket;
@@ -389,6 +400,8 @@ public class Servidor extends Observable implements Runnable{
                     	Pedido datos = (Pedido) object;
                     	if (datos.isSiguiente()) { // un empleado pidió para siguiente.  implica enviar a los monitores quién fue
                     		System.out.println(pre+"El server recibió DNI "+ datos.getDNISig() +" en una request para siguiente ");
+                    		Interaccion interaccion = Servidor.this.interaccion(2,datos.getDNISig());
+                    		Servidor.this.clienteFactory.agregaInteraccion(interaccion);
                     		Servidor.this.cola.removeAtendido(Servidor.this.buscaCliente(Servidor.this.buscaCliente(new Cliente(datos.getDNISig())))); //remueve de las listas con las que trabaja
                     		//Servidor.this.getClientes().poll();
                     		if (Servidor.this.rol==2) {
@@ -457,6 +470,8 @@ public class Servidor extends Observable implements Runnable{
                     	String DNI = (String) object;
                     	if (DNI.length()==8) {
                     		//
+                    		Interaccion interaccion = Servidor.this.interaccion(1,DNI);
+                    		Servidor.this.clienteFactory.agregaInteraccion(interaccion);
                         	System.out.println(pre+"El servidor recibió el DNI "+ DNI);
                         	Cliente cliente = Servidor.this.clienteFactory.crearCliente(DNI);
                     		Servidor.this.getClientes().add(cliente); //agrego al cliente a una coleccion de clientes

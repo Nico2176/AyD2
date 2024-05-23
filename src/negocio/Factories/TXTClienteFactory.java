@@ -1,13 +1,45 @@
 package negocio.Factories;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import modelo.Cliente;
+import modelo.Interaccion;
 
 public class TXTClienteFactory extends ClienteFactory{
 		private String pre="[FACTORY_TXT]";
 		
+		
+		
+		public void agregaInteraccion(Interaccion interaccion) {
+	        File archivo = new File("log.txt");
+
+	        // Crear el archivo si no existe
+	        if (!archivo.exists()) {
+	            try {
+					archivo.createNewFile();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	        }
+
+	        try (FileWriter fw = new FileWriter(archivo, true);
+	             BufferedWriter bw = new BufferedWriter(fw)) {
+	            bw.write(interaccion.toString()+"\n");
+	        } catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+			
+		}
+
+
+
 		@Override
 		public Cliente crearCliente(String dni) {
 			String filePath = "db.txt";
@@ -38,6 +70,9 @@ public class TXTClienteFactory extends ClienteFactory{
 			
 			
 		}
+		
+		
+		
     }
 
 

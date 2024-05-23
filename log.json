@@ -1,0 +1,35 @@
+{
+  "fechayHora": "2024-05-23 15:05:06",
+  "DNI": "12312312",
+  "interaccion": "REGISTRO"
+}
+{
+  "fechayHora": "2024-05-23 15:05:08",
+  "DNI": "23423423",
+  "interaccion": "REGISTRO"
+}
+{
+  "fechayHora": "2024-05-23 15:05:10",
+  "DNI": "34534534",
+  "interaccion": "REGISTRO"
+}
+{
+  "fechayHora": "2024-05-23 15:05:11",
+  "DNI": "12312312",
+  "interaccion": "ATENCION"
+}
+{
+  "fechayHora": "2024-05-23 15:05:12",
+  "DNI": "23423423",
+  "interaccion": "ATENCION"
+}
+{
+  "fechayHora": "2024-05-23 15:05:14",
+  "DNI": "45645645",
+  "interaccion": "REGISTRO"
+}
+{
+  "fechayHora": "2024-05-23 15:05:15",
+  "DNI": "45645645",
+  "interaccion": "ATENCION"
+}
