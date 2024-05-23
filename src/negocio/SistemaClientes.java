@@ -66,7 +66,8 @@ public class SistemaClientes implements Runnable{
 	public void enviarDatos(String DNI) throws Exception{
 		try {
 			System.out.println(pre+"Enviando datos al servidor principal");
-			this.flujoSalida.writeObject(new Cliente(DNI));
+			this.flujoSalida.writeObject(DNI);
+			//this.flujoSalida.writeObject(new Cliente(DNI));
 			System.out.println(pre+"Datos enviados al servidor principal");	
 		} catch (Exception e) {
 			System.out.println(pre+"Error enviando datos el server principal. Está caído.");
@@ -74,7 +75,7 @@ public class SistemaClientes implements Runnable{
 		
 		try {
 			System.out.println(pre+"Enviando datos al servidor secundario");
-			this.flujoSalidaSecundario.writeObject(new Cliente(DNI));
+			this.flujoSalidaSecundario.writeObject(DNI);
 			System.out.println(pre+"Datos enviados al servidor secundario");	
 		} catch (Exception e) {
 			System.out.println(pre+"Error enviando datos al server secundario. Está caído.");

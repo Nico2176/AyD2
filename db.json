@@ -1,0 +1,27 @@
+[
+  {
+    "DNI": "43989453",
+    "afinidad": "Gold",
+    "edad": 24
+  },
+  {
+    "DNI": "12312312",
+    "afinidad": "Premium",
+    "edad": 62
+  },
+  {
+    "DNI": "45645645",
+    "afinidad": "VIP",
+    "edad": 43
+  },
+  {
+    "DNI": "78978978",
+    "afinidad": "Platinum",
+    "edad": 19
+  },
+  {
+    "DNI": "43054854",
+    "afinidad": "VIP",
+    "edad": 56
+  }
+]

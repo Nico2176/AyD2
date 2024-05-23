@@ -1,0 +1,27 @@
+<Clientes>
+    <Cliente>
+        <DNI>43989453</DNI>
+        <Afinidad>Gold</Afinidad>
+        <Edad>24</Edad>
+    </Cliente>
+    <Cliente>
+        <DNI>12312312</DNI>
+        <Afinidad>Premium</Afinidad>
+        <Edad>62</Edad>
+    </Cliente>
+    <Cliente>
+        <DNI>45645645</DNI>
+        <Afinidad>VIP</Afinidad>
+        <Edad>75</Edad>
+    </Cliente>
+    <Cliente>
+        <DNI>78978978</DNI>
+        <Afinidad>Platinum</Afinidad>
+        <Edad>43</Edad>
+    </Cliente>
+    <Cliente>
+        <DNI>43054854</DNI>
+        <Afinidad>VIP</Afinidad>
+        <Edad>23</Edad>
+    </Cliente>
+</Clientes>

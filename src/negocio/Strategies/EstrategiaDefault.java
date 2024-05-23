@@ -1,8 +1,7 @@
-package negocio;
+package negocio.Strategies;
 
 import modelo.Cliente;
 import modelo.Cola;
-import modelo.IEstrategia;
 
 public class EstrategiaDefault implements IEstrategia {
 

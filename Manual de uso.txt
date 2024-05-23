@@ -4,3 +4,15 @@ JAVA SE-17
 -Ejecutar servidor.jar y dar click en "Iniciar Server"
 -Ejecutar personal.jar y monitor.jar por cada dispositivo presente en el sistema según corresponda 
 -Ejecutar cliente.jar y el sistema está listo para ser utilizado
+
+
+
+
+
+ATENCION: en config.txt se configurará la prioridad de atención y el tipo de archivo a utilizar.
+
+Prioridad de atención: En la primera linea, si el dato es un 1 se utilizará un criterio por afinidad, si el dato es un 2 se utilizará un criterio por edades,
+ mientras que con otro número será el criterio por defecto (orden de llegada)
+ 
+Tipo de archivo a utilizar: En la segunda línea del archivo, si el dato es un 1 se utilizarán archivos JSON, si es un 2 se utilizarán archivos XML
+ mientras que si con otro número se utilizarán los archivos por defecto, en este caso txt

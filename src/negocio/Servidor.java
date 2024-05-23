@@ -19,8 +19,15 @@ import java.util.Queue;
 import modelo.Cliente;
 import modelo.Cola;
 import modelo.Pedido;
+import negocio.Factories.ClienteFactory;
+import negocio.Factories.JSONClienteFactory;
+import negocio.Factories.TXTClienteFactory;
+import negocio.Factories.XMLClienteFactory;
+import negocio.Strategies.EstrategiaAfinidad;
+import negocio.Strategies.EstrategiaDefault;
+import negocio.Strategies.EstrategiaEdad;
+import negocio.Strategies.IEstrategia;
 import modelo.EstadisticaEmpleado;
-import modelo.IEstrategia;
 
 
 
@@ -36,7 +43,7 @@ public class Servidor extends Observable implements Runnable{
 	private static int boxes=0;
 	private int rol;
 	private int criterio=1;  //0 para orden de llegada, 1 para afinidad y 2 para edades. luego hacer que sea un archivo config.txt y que lo obtenga de ahi
-	
+	private ClienteFactory clienteFactory;
 	private Cola cola = new Cola();
 	private String pre="[SERVER]";
 	private boolean activo=true;   //si no está activo solo recopila datos, pero no envía, en un principio seria el servidor secundario (redundancia activa) 
@@ -113,6 +120,70 @@ public class Servidor extends Observable implements Runnable{
 		return clientes;
 	}
 
+	private void criterios() {
+		  String archivo = "config.txt";
+
+	        try {
+	            // Crear un lector de archivos de texto
+	            BufferedReader lector = new BufferedReader(new FileReader(archivo));
+
+	            // Leer las primeras tres líneas del archivo
+	            String linea1 = lector.readLine();
+	            String linea2 = lector.readLine();
+
+	            lector.close();
+
+	            // Verificar si las líneas son números 0, 1 o 2 y realizar acciones correspondientes
+	            if (linea1 != null && linea2 != null) {
+	                int criterioPrioridad = Integer.parseInt(linea1);
+	                int criterioArchivos = Integer.parseInt(linea2);
+
+	                switch (criterioPrioridad) {
+	                case 0:
+	                	this.estrategia= new EstrategiaDefault();
+	                	System.out.println(pre+"Creando EstrategiaDefault");
+	                    break;
+	                case 1:
+	                	this.estrategia= new EstrategiaAfinidad();
+	                	System.out.println(pre+"Creando EstrategiaAfinidad");
+	                    break;
+	                case 2:
+	             	    this.estrategia = new EstrategiaEdad();
+	             	   System.out.println(pre+"Creando EstrategiaEdad");
+	                    break;
+	                default:
+	                	this.estrategia= new EstrategiaDefault();
+	                	System.out.println(pre+"Creando EstrategiaDefault");
+	                    break;
+	            }
+	                
+	                switch (criterioArchivos) {
+	                case 0:
+	                    this.clienteFactory = new TXTClienteFactory();
+	                    System.out.println(pre+"Creando TXTFactory");
+	                    break;
+	                case 1:
+	                    this.clienteFactory = new JSONClienteFactory();
+	                    System.out.println(pre+"Creando JSONFactory");
+	                    break;
+	                case 2:
+	                    this.clienteFactory = new XMLClienteFactory();
+	                    System.out.println(pre+"Creando XMLFactory");
+	                    break;
+	                default:
+	                	this.clienteFactory = new TXTClienteFactory();
+	                    break;
+	            }
+	                
+	                
+	              
+	            } else {
+	                System.out.println("El archivo no tiene suficientes líneas.");
+	            }
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    }
 
 
 	public void abrirServer(int rol) {
@@ -143,12 +214,14 @@ public class Servidor extends Observable implements Runnable{
 		Thread hilo = new Thread(this);
         hilo.start();
         
-       if (this.criterio==0)
+        
+        this.criterios();
+      /* if (this.criterio==0)
     	   this.estrategia= new EstrategiaDefault();
        else if (this.criterio==1)
     	   this.estrategia= new EstrategiaAfinidad();
        else if (this.criterio==2)
-    	   this.estrategia = new EstrategiaEdad();
+    	   this.estrategia = new EstrategiaEdad(); */
        
 	}
 	
@@ -257,7 +330,7 @@ public class Servidor extends Observable implements Runnable{
 		}
 	}
 	
-	private Cliente buscaCliente(Cliente cliente) {
+	private Cliente buscaCliente(Cliente cliente) {  //este metodo llamaria a los factory segun corresponda y retornaria el cliente
 	        String filePath = "db.txt";
 	        String DNIaux = "";
 	        String[] partes=null;
@@ -272,6 +345,7 @@ public class Servidor extends Observable implements Runnable{
 	        if (DNIaux.equals(cliente.getDNI())) { //si lo encontró entonces devuelve el cliente con todos sus datos
 	        	cliente.setAfinidad(partes[1]);
 	        	cliente.setEdad(Byte.parseByte(partes[2]));
+	        	
 	        	System.out.println("Cliente cargado con datos "+ cliente.getAfinidad() + cliente.getEdad());
 	        } 
 	        System.out.println(pre+"Linea: "+ linea);
@@ -331,7 +405,7 @@ public class Servidor extends Observable implements Runnable{
                     		Servidor.this.enviarQueue();  
                     	}
                     	
-                    } else if (object instanceof Cliente) {        //es un registro de cliente
+                    } /*else if (object instanceof Cliente) {        //es un registro de cliente
                     	Cliente cliente = (Cliente) object;
                     	System.out.println(pre+"El servidor recibió el DNI "+ cliente.getDNI());
                 		Servidor.this.getClientes().add(cliente); //agrego al cliente a una coleccion de clientes
@@ -343,7 +417,7 @@ public class Servidor extends Observable implements Runnable{
                 		if (Servidor.this.rol==2) {
                 			Servidor.this.enviarQueueMonitorDisponibilidad(Servidor.this.socketDisponibilidad);
                 		}
-                    } else if (object instanceof Integer) {     //identificador de monitores
+                    } */else if (object instanceof Integer) {     //identificador de monitores
                     	int x = (int) object;
                     	if (x==2176) { //codigo que dan los monitores para identificarse
                     		System.out.println(pre+"Se agrego un nuevo monitor al sistema");
@@ -379,6 +453,23 @@ public class Servidor extends Observable implements Runnable{
                     } else if (object instanceof Cola) {
                     	Servidor.this.cola = (Cola) object;
                     	Servidor.this.enviarQueue(); 
+                    } else if (object instanceof String) {
+                    	String DNI = (String) object;
+                    	if (DNI.length()==8) {
+                    		//
+                        	System.out.println(pre+"El servidor recibió el DNI "+ DNI);
+                        	Cliente cliente = Servidor.this.clienteFactory.crearCliente(DNI);
+                    		Servidor.this.getClientes().add(cliente); //agrego al cliente a una coleccion de clientes
+                    		Servidor.this.estrategia.agregar(cola, Servidor.this.buscaCliente(cliente));    
+                    		System.out.println(pre+"Cliente: "+ cliente);
+                    		if (Servidor.this.isActivo()) {
+                    			Servidor.this.enviarQueue(); //enviar la queue actualziada a todos los empleados
+                    		}
+                    		if (Servidor.this.rol==2) {
+                    			Servidor.this.enviarQueueMonitorDisponibilidad(Servidor.this.socketDisponibilidad);
+                    		}
+                    		//
+                    	}
                     }
                     
                    /* if (object instanceof String) { 
