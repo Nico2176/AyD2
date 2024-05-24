@@ -18,6 +18,9 @@ import controlador.ControladorPersonal;
 import modelo.Cliente;
 import modelo.Cola;
 import modelo.Pedido;
+import negocio.State.StatePrincipalActivo;
+import negocio.State.StateSecundarioActivo;
+import negocio.State.StateServer;
 import modelo.EstadisticaEmpleado;
 
 
@@ -43,6 +46,7 @@ public class SistemaEmpleados extends Observable implements Runnable {
     private int segundosDesocupado=0;
     private Date comienzo;
     private Date comienzoDesocupado = new java.util.Date();
+    private StateServer estadoServidor;
 
     
 	
@@ -152,6 +156,7 @@ public class SistemaEmpleados extends Observable implements Runnable {
             System.out.println(pre+"Conectado con el servidor, puerto del socket: "+ this.socket.getLocalPort());
             this.flujoSalida = new ObjectOutputStream(socket.getOutputStream());
             this.flujoEntrada = new ObjectInputStream(socket.getInputStream());    
+            this.estadoServidor = new StatePrincipalActivo();
             this.flujoSalida.writeObject(21);
             
             try {
@@ -181,84 +186,23 @@ public class SistemaEmpleados extends Observable implements Runnable {
 	@Override
 	public synchronized void run() {
 		System.out.println(pre+"Ejecutando hilo de empleado");
-	//	while (SistemaEmpleados.this.flag) {
-		while (true) {
-			try {
-				if (this.principalActivo) {
-					System.out.println(pre+"Escuchando al servidor principal........");
-					//Thread.sleep(300);
-					ObjectInputStream flujo = new ObjectInputStream(this.socket.getInputStream());  
-					Object object =   flujo.readObject();
-					
-					System.out.println(pre+"Recibió el objeto "+ object.toString());
-					/* if (object instanceof List) { //recibió la queue de clientes actualizada
-						Queue<Cliente> clientes = (Queue<Cliente>) object;
-						this.clientes= clientes;
-						this.setChanged();
-						notifyObservers(clientes);
-						//ControladorPersonal.getInstancia().printeaLista(clientes);
-						//actualizar ventana del empleado con la queue
-					} else */if (object instanceof Integer) {
-						this.setChanged();
-						int box = (int) object;
-						notifyObservers(box);
-					} else if (object instanceof Cola) {
-						this.cola = (Cola) object;
-						this.setChanged();
-						notifyObservers((Cola) object);
-					}
-				} else { //si el principal no ta activo, recibe datos del secundario xd
-					System.out.println(pre+"Escuchando al servidor secundario........");
-					//ObjectInputStream flujoS = flujoEntradaOrdenTres;
-					ObjectInputStream flujoS = new ObjectInputStream(this.socketSecundario.getInputStream());  
-					Object object =   flujoS.readObject();
-					System.out.println(pre+"Recibió el objeto del sv secundario"+ object.toString());
-					//flujoS=new ObjectInputStream(this.socketSecundario.getInputStream());  //esta linea la voy a dejar comentada porque estuve horas buscando un error y era esta linea aca nonsense, la odio ahre
-					/*if (object instanceof List) { //recibió la queue de clientes actualizada
-						Queue<Cliente> clientes = (Queue<Cliente>) object;
-						this.clientes= clientes;
-						this.setChanged();
-						notifyObservers(clientes);
-						//ControladorPersonal.getInstancia().printeaLista(clientes);
-						//actualizar ventana del empleado con la queue
-					} else */
-					
-					if (object instanceof Cola) {
-						this.cola = (Cola) object;
-						this.setChanged();
-						notifyObservers((Cola) object);
-					} else if (object instanceof Integer) {
-						int x = (int) object;
-						if (x!=777) {
-							this.setChanged();
-							int box = (int) object;
-							notifyObservers(box);
-						} else if (x==777) {
-							System.out.println(pre+"Volvió el primario, cambiando nuevamente");
-							SistemaEmpleados.this.socket.close();
-							//SistemaEmpleados.this.socketSecundario.close();
-							
-							this.flujoEntrada.close();
-							this.flujoSalida.close();
-							Thread.sleep(200);  //un pequeño delay porque sino no le da tiempo a abrirse al servidor primario
-							SistemaEmpleados.this.reconecto("localhost", 1);
-				            this.principalActivo=true;
-				           // System.out.println("Interrumpiendo hilo de escucha");
-				            //Thread.currentThread().interrupt();
-							return;
-						} 
-						
-					}
-				
-					
-					
-				}	
-			} catch (Exception e) {
-				//e.printStackTrace();
-				System.out.println(pre+"Catcheamos excepcion recibiendo datos "+ e.toString());
+			while(true) {
+				try {
+						this.estadoServidor.manejarEvento(this);
+				} catch (Exception e) {
+					e.printStackTrace();
+					//System.out.println(pre+"Catcheamos excepcion recibiendo datos "+ e.toString());
+				}
 			}
-    		//return;
-		} 
+	}
+	
+	public void notificarObserver(Object object) {
+		this.setChanged();
+		if (object instanceof Integer) 
+			this.notifyObservers((int) object);	
+		else if (object instanceof Cola)
+			this.notifyObservers((Cola) object);
+		
 		
 	}
 	
@@ -279,6 +223,7 @@ public class SistemaEmpleados extends Observable implements Runnable {
 						if (x==17) {
 							System.out.println(pre+"Se detectó una falla en el servidor principal, cambiando al secundario");
 							SistemaEmpleados.this.principalActivo=false;
+							SistemaEmpleados.this.estadoServidor = new StateSecundarioActivo();
 							break;
 							//return;
 						} /* else if (x==777) {
@@ -314,5 +259,89 @@ public class SistemaEmpleados extends Observable implements Runnable {
 		
 		
 	}
+
+	
+
+	public void setPrincipalActivo(boolean principalActivo) {
+		this.principalActivo = principalActivo;
+	}
+
+	public void setEstadoServidor(StateServer estadoServidor) {
+		this.estadoServidor = estadoServidor;
+	}
+
+	public void setCola(Cola cola) {
+		this.cola = cola;
+	}
+
+	public Socket getSocket() {
+		return socket;
+	}
+
+	public Socket getSocketSecundario() {
+		return socketSecundario;
+	}
+
+	public ObjectOutputStream getFlujoSalida() {
+		return flujoSalida;
+	}
+
+	public ObjectInputStream getFlujoEntrada() {
+		return flujoEntrada;
+	}
+
+	public ObjectOutputStream getFlujoSalidaSecundario() {
+		return flujoSalidaSecundario;
+	}
+
+	public ObjectInputStream getFlujoEntradaSecundario() {
+		return flujoEntradaSecundario;
+	}
+
+	public boolean isPrincipalActivo() {
+		return principalActivo;
+	}
+
+	public boolean isSecundarioActivo() {
+		return secundarioActivo;
+	}
+
+	public Cola getCola() {
+		return cola;
+	}
+
+	public Thread getHilo() {
+		return hilo;
+	}
+
+	public Thread getHiloEscuchaSecundario() {
+		return hiloEscuchaSecundario;
+	}
+
+	public ArrayList<Cliente> getClientes() {
+		return clientes;
+	}
+
+	public String getPre() {
+		return pre;
+	}
+
+	public int getSegundosDesocupado() {
+		return segundosDesocupado;
+	}
+
+	public Date getComienzo() {
+		return comienzo;
+	}
+
+	public Date getComienzoDesocupado() {
+		return comienzoDesocupado;
+	}
+
+	public StateServer getEstadoServidor() {
+		return estadoServidor;
+	}
+	
+	
 
 }
