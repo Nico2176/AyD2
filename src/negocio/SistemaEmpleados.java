@@ -40,6 +40,7 @@ public class SistemaEmpleados extends Observable implements Runnable {
     private Thread hilo;
     private Thread hiloEscuchaSecundario;
     private ArrayList<Cliente> clientes;
+    private String clienteAnterior=null;
     private String clienteActual="";
     private int Box;
     private String pre="[EMPLEADO]";
@@ -87,6 +88,22 @@ public class SistemaEmpleados extends Observable implements Runnable {
 		
 	}
 
+	public void rellamar() throws Exception {
+		
+		if (this.principalActivo) {
+			if (this.clienteActual!="") {
+				this.flujoSalida.writeObject(new Pedido(this.clientes,this.Box,true,clienteActual)); //queue, box que pidió al siguiente, y true para identificar que se está pidiendo a alguien y no es un nuevo ingreso en la Queue
+				this.flujoSalida.flush();	
+				if (this.secundarioActivo) {
+					this.flujoSalidaSecundario.writeObject(new Pedido(this.clientes,this.Box,true,clienteActual)); //queue, box que pidió al siguiente, y true para identificar que se está pidiendo a alguien y no es un nuevo ingreso en la Queue
+					this.flujoSalidaSecundario.flush();
+				}
+			} else throw new Exception ("No hay cliente actual");
+		} else if (this.secundarioActivo) {
+			this.flujoSalidaSecundario.writeObject(new Pedido(this.clientes,this.Box,true,clienteActual)); //queue, box que pidió al siguiente, y true para identificar que se está pidiendo a alguien y no es un nuevo ingreso en la Queue
+			this.flujoSalidaSecundario.flush();
+		}
+	}
 	
 	public void siguiente() throws Exception{
 		if (this.clienteActual!=null && !this.clienteActual.equalsIgnoreCase("")) 
@@ -94,6 +111,7 @@ public class SistemaEmpleados extends Observable implements Runnable {
 		
 			
 		try {
+			clienteAnterior=clienteActual;
 			clienteActual = this.cola.getLista().remove(0).getDNI();
 			//clienteActual = this.clientes.poll().getDNI();	
 		} catch (Exception e) {

@@ -9,6 +9,7 @@ import javax.swing.JOptionPane;
 
 import negocio.EstadisticaServidor;
 import negocio.Servidor;
+import negocio.Verificador;
 import vista.Ivista;
 import vista.VentanaEstadisticas;
 import vista.VentanaServer;
@@ -19,16 +20,27 @@ public class ControladorServer implements ActionListener, Observer {
 	private VentanaEstadisticas ventanaEstadisticas;
 	private Servidor servidor;
 	private int rol;
+	private Verificador verificador = new Verificador();
 
-	public ControladorServer(int rol) {
+	public ControladorServer() {
 		this.vista = new VentanaServer();
 		this.vista.setActionListener(this);
 		this.vista.mostrar();
 		this.servidor=new Servidor();
 		this.servidor.addObserver(this);
-		this.rol=rol; //para indicar si el servidor es primario o secundario
+		
+		this.rol=this.verificador.verificaServidores();; //para indicar si el servidor es primario o secundario
+		System.out.println("El verificador devolvió crear servidor "+ this.rol);
 		VentanaServer ventanaServer = (VentanaServer) this.vista;
-		ventanaServer.setTitle(this.rol==1?"Servidor":"Servidor secundario");
+		
+		String aux=null;;
+		if (this.rol==1)
+			aux="Servidor";
+		else if  (this.rol==2)
+			aux="Servidor secundario";
+		else if (this.rol==0)
+			System.exit(0);
+		ventanaServer.setTitle(aux);
 		
 	}
 	

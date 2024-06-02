@@ -57,6 +57,7 @@ public class VentanaPersonal extends JFrame implements Ivista {
     private JLabel lbl_lista_6;
     private JPanel[] paneles = new JPanel[6];
 	private JLabel[] labels = new JLabel[6];
+	private JButton btnRellamar;
 
     /**
      * Launch the application.
@@ -105,6 +106,11 @@ public class VentanaPersonal extends JFrame implements Ivista {
         btnSiguiente = new JButton("Siguiente");
         btnSiguiente.setFont(new Font("Comic Sans MS", Font.PLAIN, 11));
         panel_1.add(btnSiguiente);
+        
+        btnRellamar = new JButton("Rellamar");
+        btnRellamar.setActionCommand("Rellamar");
+        btnRellamar.setFont(new Font("Comic Sans MS", Font.PLAIN, 11));
+        panel_1.add(btnRellamar);
         
         panel_2 = new JPanel();
         panel_2.setBackground(SystemColor.activeCaption);
@@ -260,6 +266,7 @@ public class VentanaPersonal extends JFrame implements Ivista {
     public void setActionListener(ActionListener actionListener) {
         this.btnSiguiente.addActionListener(actionListener);
         this.btnFinalizarTurno.addActionListener(actionListener);
+        this.btnRellamar.addActionListener(actionListener);
         this.actionListener=actionListener;
     }
 

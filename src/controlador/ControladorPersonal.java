@@ -54,6 +54,12 @@ public class ControladorPersonal implements ActionListener, Observer{
 				ventana.actualizaSiguiente("");
 				SistemaEmpleados.getInstancia().setClienteActual("");  
 			}
+		} else if (comando.equalsIgnoreCase("Rellamar")) {
+			try {
+				SistemaEmpleados.getInstancia().rellamar();
+			} catch (Exception e1) {
+				JOptionPane.showMessageDialog(null, e1.getMessage());
+			}
 		}
 		
 	}
