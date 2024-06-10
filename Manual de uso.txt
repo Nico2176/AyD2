@@ -7,8 +7,15 @@ JAVA SE-17
 
 
 
+(Opcional) Para utilizar la función de disponibilidad deben de ejecutarse primero dos instancias de servidor, y luego el monitor de disponibilidad.
+ Se simula un fallo en el servidor principal cerrándolo y automáticamente se volverá a abrir el secundario. Una vez hecho esto se puede reabrir el primario
+ y se resincroniza el estado. Ciclo de caídas y reactivadas tantas veces como se desee. 
+
+
 
 ATENCION: en config.txt se configurará la prioridad de atención y el tipo de archivo a utilizar.
+
+En db."tipo de archivo" se guardarán los clientes registrados para el posterior trato según la prioridad de atención:
 
 Prioridad de atención: En la primera linea, si el dato es un 1 se utilizará un criterio por afinidad, si el dato es un 2 se utilizará un criterio por edades,
  mientras que con otro número será el criterio por defecto (orden de llegada)
