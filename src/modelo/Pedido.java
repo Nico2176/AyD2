@@ -1,10 +1,11 @@
 package modelo;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Queue;
 
-public class Datos implements Serializable {
-	private Queue<Cliente> clientes;
+public class Pedido implements Serializable {
+	private ArrayList<Cliente> clientes;
 	private int box;
 	private boolean siguiente=false;
 	private String DNISig;
@@ -31,7 +32,7 @@ public class Datos implements Serializable {
 
 	
 
-	public Datos(int box, String dNISig) {
+	public Pedido(int box, String dNISig) {
 		super();
 		this.box = box;
 		this.DNISig = dNISig;
@@ -46,7 +47,7 @@ public class Datos implements Serializable {
 
 	
 
-	public Datos(Queue<Cliente> clientes, int box, boolean siguiente, String DNISig) {
+	public Pedido(ArrayList<Cliente> clientes, int box, boolean siguiente, String DNISig) {
 		super();
 		this.clientes = clientes;
 		this.box = box;
@@ -56,17 +57,17 @@ public class Datos implements Serializable {
 	
 	
 	
-	public Datos(Queue<Cliente> clientes) {
+	public Pedido(ArrayList<Cliente> clientes) {
 		super();
 		this.clientes = clientes;
 	}
 
 
 
-	public Queue<Cliente> getClientes() {
+	public ArrayList<Cliente> getClientes() {
 		return clientes;
 	}
-	public void setClientes(Queue<Cliente> clientes) {
+	public void setClientes(ArrayList<Cliente> clientes) {
 		this.clientes = clientes;
 	}
 	public int getBox() {
@@ -80,7 +81,7 @@ public class Datos implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Datos [clientes=" + clientes + ", box=" + box + ", siguiente=" + siguiente + ", DNISig=" + DNISig + "]";
+		return "Pedido [clientes=" + clientes + ", box=" + box + ", siguiente=" + siguiente + ", DNISig=" + DNISig + "]";
 	}
 	
 	

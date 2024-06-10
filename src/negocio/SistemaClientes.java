@@ -10,22 +10,24 @@ import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JOptionPane;
-
 import modelo.Cliente;
 
-public class SistemaClientes implements Runnable {
+public class SistemaClientes implements Runnable{
 	private static SistemaClientes instancia;
 	private Socket socket;
+	private Socket socketSecundario;
+	private boolean principalActivo=true;
 	private ObjectOutputStream flujoSalida;
     private ObjectInputStream flujoEntrada;
+    private ObjectOutputStream flujoSalidaSecundario;
+    private ObjectInputStream flujoEntradaSecundario;
+    private String pre="[CLIENTE]";
 	private ArrayList<Cliente> pendientes = new ArrayList<Cliente>();
 	private Thread hilo;
-	private String pre ="[CLIENTE]";
 	
 	public static SistemaClientes getInstancia() {
-		if (instancia == null) 
-			instancia = new SistemaClientes();	
+		if (instancia == null)
+			instancia = new SistemaClientes();
 		return instancia;
 	}
 	
@@ -44,50 +46,85 @@ public class SistemaClientes implements Runnable {
 	
 	
 	public void conectar(String host, int puerto) throws Exception{ 
-        try {
-            this.socket = new Socket(host, puerto); 
-            System.out.println("Cliente conectado con el servidor, puerto del socket: "+ this.socket.getLocalPort());
-            this.flujoSalida = new ObjectOutputStream(socket.getOutputStream());
-            this.flujoEntrada = new ObjectInputStream(socket.getInputStream());
-            this.hilo = new Thread(this);
-    		hilo.start();
+		this.socket = new Socket(host, puerto); 
+		this.flujoSalida = new ObjectOutputStream(socket.getOutputStream());
+        this.flujoEntrada = new ObjectInputStream(socket.getInputStream());
+        System.out.println(pre+"Cliente conectado con el servidor, puerto del socket: "+ this.socket.getLocalPort());
+        try {   
+            this.socketSecundario = new Socket("localhost",2);
+            this.flujoSalidaSecundario = new ObjectOutputStream(socketSecundario.getOutputStream());
+            this.flujoEntradaSecundario = new ObjectInputStream(socketSecundario.getInputStream());
+            this.hilo = new Thread (this);
+            hilo.start();
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            System.out.println("No hay servidor secundario");
         }
+        
+        
     }
 	
 	public void enviarDatos(String DNI) throws Exception{
-			System.out.println("Enviando datos al servidor");
+		try {
+			System.out.println(pre+"Enviando datos al servidor principal");
+			this.flujoSalida.writeObject(DNI);
+			//this.flujoSalida.writeObject(new Cliente(DNI));
+			System.out.println(pre+"Datos enviados al servidor principal");	
+		} catch (Exception e) {
+			System.out.println(pre+"Error enviando datos el server principal. Está caído.");
+		}
+		
+		try {
+			System.out.println(pre+"Enviando datos al servidor secundario");
+			this.flujoSalidaSecundario.writeObject(DNI);
+			System.out.println(pre+"Datos enviados al servidor secundario");	
+		} catch (Exception e) {
+			System.out.println(pre+"Error enviando datos al server secundario. Está caído.");
+		}
+		
+	/*	if (this.principalActivo) {
+			System.out.println(pre+"Enviando datos al servidor principal");
 			this.flujoSalida.writeObject(new Cliente(DNI));
-			System.out.println("Datos enviados al servidor");	
+			System.out.println(pre+"Datos enviados al servidor principal");
+		} else {
+			System.out.println(pre+"Enviando datos al servidor secundario");
+			this.flujoSalidaSecundario.writeObject(new Cliente(DNI));
+			System.out.println(pre+"Datos enviados al servidor secundario");	
+		}	*/
 	}
+
+	
 
 
 	@Override
 	public void run() {
-		System.out.println(pre+"Ejecutando hilo de empleado");
 		while (true) {
 			try {
-				System.out.println(pre+"Escuchando........");
-				ObjectInputStream flujo = new ObjectInputStream(this.socket.getInputStream());  ////?????????????????? no tocar, por algun motivo no funciona con el input original y tuve que crear este xD
-				Object object =   flujo.readObject();
-				System.out.println(pre+"Recibió el objeto "+ object.toString());
-				if (object instanceof Integer) { 
-					int x = (int) object;
-					if (x==404) {
-						JOptionPane.showMessageDialog(null, "El DNI ya está registrado en el sistema");
-					} else if (x==505) {
-						JOptionPane.showMessageDialog(null, "Registro exitoso!");
+					System.out.println(pre+"Escuchando a ver si cambia el servidor!!!");
+					ObjectInputStream flujo = new ObjectInputStream(this.socketSecundario.getInputStream());  ////?????????????????? no tocar, por algun motivo no funciona con el input original y tuve que crear este xD
+					Object object =   flujo.readObject();
+					System.out.println(pre+"Recibió el objeto "+ object.toString());
+					if (object instanceof Integer) {
+						int x = (int) object;
+						if (x==17) {
+							System.out.println("Cambiando a servidor secundario!!");
+							this.socket.close();
+							this.principalActivo=false;
+						} else if (x==777) {
+							Thread.sleep(100);  //un pequeño delay porque sino no le da tiempo a abrirse al servidor primario
+							System.out.println("Volvió el primario, cambiando nuevamente");
+							this.socket = new Socket("localhost", 1); 
+				            System.out.println(pre+"Cliente reconectado con el servidor principal "+ this.socket.getLocalPort());
+				            this.flujoSalida = new ObjectOutputStream(socket.getOutputStream());
+				            this.flujoEntrada = new ObjectInputStream(socket.getInputStream());
+							this.principalActivo=true;
+							
+						}
+						//return;
 					}
-				} 
-				
-				
-				
-			} catch (ClassNotFoundException | IOException e) {
-				System.out.println(pre+"Excepcion recibiendo la queue "+ e.toString());
-			}
-    		
-		}
-		
-	}
+									
+				}	catch (Exception e) {
+					System.out.println(e.getMessage());
+				}
+}
+}
 }

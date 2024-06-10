@@ -9,6 +9,7 @@ import javax.swing.JButton;
 import java.awt.SystemColor;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -19,6 +20,7 @@ import java.awt.FlowLayout;
 import javax.swing.border.LineBorder;
 
 import modelo.Cliente;
+import modelo.Cola;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -55,6 +57,8 @@ public class VentanaPersonal extends JFrame implements Ivista {
     private JLabel lbl_lista_6;
     private JPanel[] paneles = new JPanel[6];
 	private JLabel[] labels = new JLabel[6];
+	private JButton btnRellamar;
+	private JButton btnNewButton;
 
     /**
      * Launch the application.
@@ -103,6 +107,15 @@ public class VentanaPersonal extends JFrame implements Ivista {
         btnSiguiente = new JButton("Siguiente");
         btnSiguiente.setFont(new Font("Comic Sans MS", Font.PLAIN, 11));
         panel_1.add(btnSiguiente);
+        
+        btnRellamar = new JButton("Rellamar");
+        btnRellamar.setActionCommand("Rellamar");
+        btnRellamar.setFont(new Font("Comic Sans MS", Font.PLAIN, 11));
+        panel_1.add(btnRellamar);
+        
+        btnNewButton = new JButton("Ausente");
+        btnNewButton.setFont(new Font("Comic Sans MS", Font.PLAIN, 11));
+        panel_1.add(btnNewButton);
         
         panel_2 = new JPanel();
         panel_2.setBackground(SystemColor.activeCaption);
@@ -210,19 +223,36 @@ public class VentanaPersonal extends JFrame implements Ivista {
     }
 
     
-    public void printeaLista(Object obj) {
+  /*  public void printeaLista(Object obj) {
     	Queue<Cliente> clientes = (Queue<Cliente>) obj;
     	LinkedList<Cliente> lista = new LinkedList<Cliente> (clientes); //convierto la queue en una lista para poder acceder a los elementos 
     	Iterator<Cliente> iterador = lista.iterator();               
     	int i=0;
     	Toolkit.getDefaultToolkit().beep();
-        while (iterador.hasNext()) {
+        while (iterador.hasNext() && i<6) {
         	Cliente cliente = iterador.next();
         	this.labels[i].setText(cliente.toString());                 //los printeo en la ventana
         	i++;  
         }
         
-        for (int x = i+1 ; x < 6; x++) {
+        for (int x = i ; x < 6; x++) {
+           this.labels[i].setText("");
+        }
+    } */
+    
+    
+    public void printeaLista(Cola cola) {
+    	ArrayList<Cliente> lista = cola.getLista();
+    	Iterator<Cliente> iterador = lista.iterator();               
+    	int i=0;
+    	Toolkit.getDefaultToolkit().beep();
+        while (iterador.hasNext() && i<6) {
+        	Cliente cliente = iterador.next();
+        	this.labels[i].setText(cliente.toString());                 //los printeo en la ventana
+        	i++;  
+        }
+        
+        for (int x = i ; x < 6; x++) {
            this.labels[i].setText("");
         }
     }
@@ -241,6 +271,8 @@ public class VentanaPersonal extends JFrame implements Ivista {
     public void setActionListener(ActionListener actionListener) {
         this.btnSiguiente.addActionListener(actionListener);
         this.btnFinalizarTurno.addActionListener(actionListener);
+        this.btnRellamar.addActionListener(actionListener);
+        this.btnNewButton.addActionListener(actionListener);
         this.actionListener=actionListener;
     }
 

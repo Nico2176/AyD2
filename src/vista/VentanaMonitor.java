@@ -11,11 +11,13 @@ import java.awt.Font;
 import java.awt.SystemColor;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 
 import modelo.Cliente;
+import modelo.Cola;
 
 import javax.swing.JScrollPane;
 
@@ -82,7 +84,7 @@ public class VentanaMonitor extends JFrame implements Ivista{
      * Initialize the contents of the frame.
      */
     private void initialize() {
-    	this.setTitle("Monitor");
+    	this.setTitle("Pantalla");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 450, 300);
         
@@ -189,15 +191,18 @@ public class VentanaMonitor extends JFrame implements Ivista{
     }
     
     public void printLblBox(int box) {
-    	this.lblBox.setText("BOX: "+ box);
+    	if (box!=-1)
+    		this.lblBox.setText("BOX: "+ box);
+    	else
+    		this.lblBox.setText("BOX: "+ "-" );
     }
     
     public void printlblSiguiente(String DNI) {
     	this.lblSiguiente.setText("SIGUIENTE: "+ DNI);
     }
     
-    public void printeaLista(Object obj) {
-    	Toolkit.getDefaultToolkit().beep();
+   /*  public void printeaLista(Object obj) {
+    	//Toolkit.getDefaultToolkit().beep();
         Queue<Cliente> clientes = (Queue<Cliente>) obj;
         LinkedList<Cliente> lista = new LinkedList<Cliente> (clientes); //convierto la queue en una lista para poder acceder a los elementos 
         Iterator<Cliente> iterador = lista.iterator();               
@@ -208,10 +213,40 @@ public class VentanaMonitor extends JFrame implements Ivista{
             i++;  
         }
         
-        for (int x = i+1 ; x < N; x++) {
+        for (int x = i ; x < N; x++) {
+           this.labels[i].setText("");
+        }
+    } */
+    
+    
+    public void printeaLista(ArrayList<Cliente> lista) {
+    	Iterator<Cliente> iterador = lista.iterator();               
+        int i=0;
+        while (iterador.hasNext()) {
+            Cliente cliente = iterador.next();
+            this.labels[i].setText(cliente.atendido());                 //los printeo en la ventana
+            i++;  
+        }
+        
+        for (int x = i ; x < N; x++) {
            this.labels[i].setText("");
         }
     }
+    
+   /* public void printeaLista(Cola cola) {
+    	ArrayList<Cliente> lista = cola.getLista();
+        Iterator<Cliente> iterador = lista.iterator();               
+        int i=0;
+        while (iterador.hasNext()) {
+            Cliente cliente = iterador.next();
+            this.labels[i].setText(cliente.toString());                 //los printeo en la ventana
+            i++;  
+        }
+        
+        for (int x = i ; x < N; x++) {
+           this.labels[i].setText("");
+        }
+    } */
     
 
     @Override

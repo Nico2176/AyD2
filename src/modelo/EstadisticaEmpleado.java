@@ -2,7 +2,7 @@ package modelo;
 
 import java.io.Serializable;
 
-public class DatosEstadisticos implements Serializable{
+public class EstadisticaEmpleado implements Serializable{
 	private int segundosAtendiendo;
 	private int segundosDesocupado;
 

@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -12,7 +13,8 @@ import java.util.Queue;
 import javax.swing.JOptionPane;
 
 import modelo.Cliente;
-import modelo.Datos;
+import modelo.Cola;
+import modelo.Pedido;
 import negocio.SistemaClientes;
 import vista.Ivista;
 import vista.VentanaMonitor;
@@ -34,7 +36,6 @@ public class ControladorMonitor implements ActionListener, Observer {
 			JOptionPane.showMessageDialog(null, "Servidor no disponible", "Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
 		}
-		SistemaMonitor.getInstancia().iniciarHilo();
 		try {
 			
 		} catch (Exception e) {
@@ -51,13 +52,22 @@ public class ControladorMonitor implements ActionListener, Observer {
 	@Override
 	public void update(Observable o, Object arg) {
 		VentanaMonitor ventana = (VentanaMonitor) this.vista;
-		if (arg instanceof List)
-			ventana.printeaLista(arg);
-		else if (arg instanceof Datos) {
-			Datos datos = (Datos) arg;
+		//if (arg instanceof List)
+			//ventana.printeaLista(arg);
+		if (arg instanceof Cola) {
+		//	ventana.printeaLista((Cola) arg);
+		} else if (arg instanceof Pedido) {
+			Pedido datos = (Pedido) arg;
 			ventana.printLblBox((int) datos.getBox() );
 			ventana.printlblSiguiente((String) datos.getDNISig());
-		} 
+		} else if (arg instanceof List) {
+			ArrayList<Cliente> aux = (ArrayList<Cliente>) arg;
+			ventana.printeaLista(aux);
+			ventana.printLblBox(-1);
+			ventana.printlblSiguiente("");
+		}
+		
+		
 		
 	}
 	
