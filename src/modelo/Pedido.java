@@ -81,7 +81,7 @@ public class Pedido implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Datos [clientes=" + clientes + ", box=" + box + ", siguiente=" + siguiente + ", DNISig=" + DNISig + "]";
+		return "Pedido [clientes=" + clientes + ", box=" + box + ", siguiente=" + siguiente + ", DNISig=" + DNISig + "]";
 	}
 	
 	

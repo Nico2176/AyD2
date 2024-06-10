@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -54,12 +55,17 @@ public class ControladorMonitor implements ActionListener, Observer {
 		//if (arg instanceof List)
 			//ventana.printeaLista(arg);
 		if (arg instanceof Cola) {
-			ventana.printeaLista((Cola) arg);
+		//	ventana.printeaLista((Cola) arg);
 		} else if (arg instanceof Pedido) {
 			Pedido datos = (Pedido) arg;
 			ventana.printLblBox((int) datos.getBox() );
 			ventana.printlblSiguiente((String) datos.getDNISig());
-		} 
+		} else if (arg instanceof List) {
+			ArrayList<Cliente> aux = (ArrayList<Cliente>) arg;
+			ventana.printeaLista(aux);
+			ventana.printLblBox(-1);
+			ventana.printlblSiguiente("");
+		}
 		
 		
 		

@@ -60,6 +60,15 @@ public class ControladorPersonal implements ActionListener, Observer{
 			} catch (Exception e1) {
 				JOptionPane.showMessageDialog(null, e1.getMessage());
 			}
+		} else if (comando.equalsIgnoreCase("Ausente")) {
+			if (SistemaEmpleados.getInstancia().getClienteActual().equalsIgnoreCase("")) 
+				JOptionPane.showMessageDialog(null, "Debes estar atendiendo a alguien para marcarlo como ausente", "Error", JOptionPane.ERROR_MESSAGE);
+			else {
+				VentanaPersonal ventana = (VentanaPersonal) this.vista;
+				ventana.actualizaSiguiente("");
+				SistemaEmpleados.getInstancia().ausente();
+			}
+			
 		}
 		
 	}

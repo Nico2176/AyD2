@@ -88,6 +88,10 @@ public class SistemaEmpleados extends Observable implements Runnable {
 		
 	}
 
+	public void ausente(){
+		this.clienteActual="";	
+	}
+	
 	public void rellamar() throws Exception {
 		
 		if (this.principalActivo) {
@@ -156,9 +160,12 @@ public class SistemaEmpleados extends Observable implements Runnable {
 			EstadisticaEmpleado datos = new EstadisticaEmpleado();
 			datos.setSegundosDesocupado(this.segundosDesocupado);
 			datos.setSegundosAtendiendo(((int)((fin.getTime() - this.comienzo.getTime()) / 1000)));
+			System.out.println("CLIENTE Q FINALICE DE ATENDER: "+ this.clienteActual);
 			if (this.principalActivo) {
+				this.flujoSalida.writeObject(this.Box+this.clienteActual);
 				this.flujoSalida.writeObject(datos);
 			} else {
+				this.flujoSalidaSecundario.writeObject(this.Box+this.clienteActual);
 				this.flujoSalidaSecundario.writeObject(datos);
 			}
 			this.comienzoDesocupado= new java.util.Date();

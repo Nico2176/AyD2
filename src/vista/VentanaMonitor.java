@@ -84,7 +84,7 @@ public class VentanaMonitor extends JFrame implements Ivista{
      * Initialize the contents of the frame.
      */
     private void initialize() {
-    	this.setTitle("Monitor");
+    	this.setTitle("Pantalla");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 450, 300);
         
@@ -191,7 +191,10 @@ public class VentanaMonitor extends JFrame implements Ivista{
     }
     
     public void printLblBox(int box) {
-    	this.lblBox.setText("BOX: "+ box);
+    	if (box!=-1)
+    		this.lblBox.setText("BOX: "+ box);
+    	else
+    		this.lblBox.setText("BOX: "+ "-" );
     }
     
     public void printlblSiguiente(String DNI) {
@@ -216,7 +219,21 @@ public class VentanaMonitor extends JFrame implements Ivista{
     } */
     
     
-    public void printeaLista(Cola cola) {
+    public void printeaLista(ArrayList<Cliente> lista) {
+    	Iterator<Cliente> iterador = lista.iterator();               
+        int i=0;
+        while (iterador.hasNext()) {
+            Cliente cliente = iterador.next();
+            this.labels[i].setText(cliente.atendido());                 //los printeo en la ventana
+            i++;  
+        }
+        
+        for (int x = i ; x < N; x++) {
+           this.labels[i].setText("");
+        }
+    }
+    
+   /* public void printeaLista(Cola cola) {
     	ArrayList<Cliente> lista = cola.getLista();
         Iterator<Cliente> iterador = lista.iterator();               
         int i=0;
@@ -229,7 +246,7 @@ public class VentanaMonitor extends JFrame implements Ivista{
         for (int x = i ; x < N; x++) {
            this.labels[i].setText("");
         }
-    }
+    } */
     
 
     @Override

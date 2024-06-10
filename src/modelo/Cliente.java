@@ -8,6 +8,7 @@ public class Cliente implements Serializable {
 	private String DNI;
 	private String afinidad;
 	private byte edad;
+	private byte boxAsignado;
 	
 	
 	
@@ -18,6 +19,15 @@ public class Cliente implements Serializable {
 	
 	
 	
+
+	public Cliente(String dNI, byte boxAsignado) {
+		super();
+		DNI = dNI;
+		this.boxAsignado = boxAsignado;
+	}
+
+
+
 
 	public Cliente(String dNI, String afinidad, byte edad) {
 		super();
@@ -68,6 +78,10 @@ public class Cliente implements Serializable {
 	@Override
 	public String toString() {
 		return "Cliente [DNI=" + DNI + ", afinidad=" + afinidad + ", edad=" + edad + "]";
+	}
+	
+	public String atendido() {
+		return "Cliente: "+ this.DNI + "  Box: "+ this.boxAsignado;
 	}
 
 

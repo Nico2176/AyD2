@@ -8,7 +8,6 @@ JAVA SE-17
 
 
 
-
 ATENCION: en config.txt se configurará la prioridad de atención y el tipo de archivo a utilizar.
 
 Prioridad de atención: En la primera linea, si el dato es un 1 se utilizará un criterio por afinidad, si el dato es un 2 se utilizará un criterio por edades,
@@ -16,3 +15,5 @@ Prioridad de atención: En la primera linea, si el dato es un 1 se utilizará un
  
 Tipo de archivo a utilizar: En la segunda línea del archivo, si el dato es un 1 se utilizarán archivos JSON, si es un 2 se utilizarán archivos XML
  mientras que si con otro número se utilizarán los archivos por defecto, en este caso txt
+ 
+ Si se abren más instancias del servidor, simulará ser un servidor secundario. En caso de que el primario se caiga, se puede volver a reabrir. Máximo de servidores simultáneos: 2.

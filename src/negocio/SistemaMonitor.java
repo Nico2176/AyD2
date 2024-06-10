@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Queue;
@@ -21,8 +22,10 @@ public class SistemaMonitor extends Observable implements Runnable {
 	private ObjectOutputStream flujoSalidaSecundario;
 	private ObjectInputStream flujoEntradaSecundario;
 	private Queue<Cliente> clientes;
+	private ArrayList<Cliente> clientesAtendidos = new ArrayList<Cliente>();
 	private static SistemaMonitor instancia;
 	private Thread hilo;
+	private Cola cola;
 	private Thread hiloCambioServidor;
 	private boolean principalActivo = true;
 	private String pre = "[PANTALLA]";
@@ -108,14 +111,26 @@ public class SistemaMonitor extends Observable implements Runnable {
 						this.setChanged();
 						notifyObservers(clientes);
 					} else if (object instanceof Pedido) {
+						Pedido pedido = (Pedido) object;
 						this.setChanged();
-						Pedido datos = (Pedido) object;
-						notifyObservers(datos);
-					} else if (object instanceof Cola) {
+						notifyObservers(pedido);
+						
+					} else if (object instanceof String) {
+						String atendido = (String) object;
+						
+						byte aux = (byte) ((byte) atendido.charAt(0)-'0');	
+						
+						this.clientesAtendidos.add(0,new Cliente(atendido.substring(1, 9),aux));
+						this.setChanged();
+						notifyObservers(this.clientesAtendidos);
+					}
+					
+					
+					/*else if (object instanceof Cola) {
 						this.setChanged();
 						notifyObservers((Cola) object);
 						
-					}
+					} */
 					
 					
 					
@@ -126,7 +141,7 @@ public class SistemaMonitor extends Observable implements Runnable {
 			} else {    //principal no activo
 				try {
 					System.out.println(pre+"monitor escuchando del sv secundario........");
-					ObjectInputStream flujoS = new ObjectInputStream(this.socketSecundario.getInputStream());  ////?????????????????? no tocar, por algun motivo no funciona con el input original y tuve que crear este xD
+					ObjectInputStream flujoS = new ObjectInputStream(this.socketSecundario.getInputStream());  
 					Object object =   flujoS.readObject();
 					System.out.println(pre+"monitor recibió el objeto "+ object.toString());
 					if (object instanceof List) { //recibió la queue de clientes actualizada
@@ -157,11 +172,19 @@ public class SistemaMonitor extends Observable implements Runnable {
 				          //  Thread.currentThread().interrupt();
 							return;
 						}
-					} else if (object instanceof Cola) {
+					} else if (object instanceof String) {
+						String atendido = (String) object;
+						
+						byte aux = (byte) ((byte) atendido.charAt(0)-'0');		
+						
+						this.clientesAtendidos.add(0,new Cliente(atendido.substring(1, 9),aux));
+						this.setChanged();
+						notifyObservers(this.clientesAtendidos);
+					} /*else if (object instanceof Cola) {
 						this.setChanged();
 						notifyObservers((Cola) object);
 						
-					}
+					} */
 					
 					
 					

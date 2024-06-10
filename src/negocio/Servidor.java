@@ -303,6 +303,24 @@ public class Servidor extends Observable implements Runnable{
  		}
 	}
 	
+	private void enviarAtendidoMonitor(String atendido) {
+		Iterator<Socket> iterador = this.monitores.iterator();
+ 		while (iterador.hasNext()) {
+ 			Socket aux = iterador.next();
+ 			try {
+				ObjectOutputStream flujo = new ObjectOutputStream(aux.getOutputStream());
+                flujo.writeObject(atendido);
+                flujo.flush();
+                System.out.println(pre+" Enviamos " + atendido + " a los monitores!!!");
+			} catch (IOException e) {
+				System.out.println(pre+"Excepcion enviando queues: "+ e.getMessage());
+			}
+ 		}
+ 		
+ 		
+	}
+
+	
 	
 	public void enviarBoxMonitores(int box, String DNISig) { //envío a todos los monitores el box que hizo el request de siguiente
 		Iterator<Socket> iterador = this.monitores.iterator();
@@ -475,6 +493,7 @@ public class Servidor extends Observable implements Runnable{
                         	System.out.println(pre+"El servidor recibió el DNI "+ DNI);
                         	Cliente cliente = Servidor.this.clienteFactory.crearCliente(DNI);
                     		Servidor.this.getClientes().add(cliente); //agrego al cliente a una coleccion de clientes
+                    		System.out.println(pre+"Agregando a la queue con strategy "+ Servidor.this.estrategia.toString());
                     		Servidor.this.estrategia.agregar(cola, Servidor.this.buscaCliente(cliente));    
                     		System.out.println(pre+"Cliente: "+ cliente);
                     		if (Servidor.this.isActivo()) {
@@ -484,6 +503,8 @@ public class Servidor extends Observable implements Runnable{
                     			Servidor.this.enviarQueueMonitorDisponibilidad(Servidor.this.socketDisponibilidad);
                     		}
                     		//
+                    	} else if (DNI.length()==9) {
+                    		Servidor.this.enviarAtendidoMonitor(DNI);
                     	}
                     }
                     
